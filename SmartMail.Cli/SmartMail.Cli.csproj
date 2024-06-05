@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+	<PropertyGroup>
+		<AssemblyVersion>0.1.*</AssemblyVersion>
+		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+		<Deterministic>false</Deterministic>
+	</PropertyGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\SmartMailApiClient\SmartMailApiClient.csproj" />
+	</ItemGroup>
+</Project>
