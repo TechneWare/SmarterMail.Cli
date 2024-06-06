@@ -7,9 +7,6 @@ This is a solution with two projects
 
 Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the block list. However, I created this initial version to solve my use case, which is automated blocklist management.
 The command line utility grew into something that can be extended to perform any action against a Smarter Mail server. With features such as:
-
-The commandline utility grew into something that can be extended to perform any action you want against a Smarter Mail server. 
-With features such as:
 - Auto-login to the API and token maintenance
 - Interactive or Commandline modes
 - A scripting engine
