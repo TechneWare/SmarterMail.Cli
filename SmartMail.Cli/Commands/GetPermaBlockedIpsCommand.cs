@@ -20,7 +20,7 @@ namespace SmartMail.Cli.Commands
 
         public string[] CommandAlternates => ["gpbip", "gpb"];
 
-        public string Description => "loads permanetly blocked IP addresses to memory";
+        public string Description => "loads permanently blocked IP addresses to memory";
 
         public string ExtendedDescription => "Contains blocked protocol flags";
 

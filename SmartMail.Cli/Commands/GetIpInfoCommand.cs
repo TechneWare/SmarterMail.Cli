@@ -20,7 +20,7 @@ namespace SmartMail.Cli.Commands
 
         public string[] CommandAlternates => ["ip"];
 
-        public string Description => "Attempts to retreive IP Info from Virus Total for the specified IP Address";
+        public string Description => "Attempts to retrieve IP Info from Virus Total for the specified IP Address";
 
         public string ExtendedDescription => "";
 
