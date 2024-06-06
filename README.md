@@ -6,7 +6,9 @@ This is a solution with two projects
 - A simple command line utility to manage an IP Black List on a SmarterMail server using the server's API
 
 Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the block list. However, I created this initial version to solve my use case, which is automated blocklist management.
-The command line utility grew into something that can be extended to perform any action against a Smarter Mail server. With features such as:
+The command line utility grew into something that can be extended to perform any action against a Smarter Mail server. 
+
+With features such as:
 - Auto-login to the API and token maintenance
 - Interactive or Commandline modes
 - A scripting engine
@@ -35,7 +37,7 @@ This is done as one might expect, by first:
 - Then, remove each IDS block and add/document it in the permanent blocklist.
 
 ### Blocklist optimization
-Optimizing the blacklist is done by examining all the known bad actor IPs to see if any of them can be grouped into a subnet or CIDR group. Identifying these CIDR groups allows for replacing many IP address entries with a single entry covering an entire subnet. Consider the number of bad actor IPs found for a given subnet. We can make a judgment call as to the reputation of the subnet and thus choose when to implement a CIDR block that will encompass additional IP addresses.
+Optimizing the blocklist is done by examining all the known bad actor IPs to see if any of them can be grouped into a subnet or CIDR group. Identifying these CIDR groups allows for replacing many IP address entries with a single entry covering an entire subnet. Consider the number of bad actor IPs found for a given subnet. We can make a judgment call as to the reputation of the subnet and thus choose when to implement a CIDR block that will encompass additional IP addresses.
 
 CIDR blocking has two main benefits:
 1. Since the subnet being blocked has a bad reputation:
@@ -132,7 +134,7 @@ Wait [milliseconds]               - Waits the specified number of miliseconds
 
 Most commands have a short version, and you can get those by typing `Help [CommandName]`
 
-** _Note:_ You will need a server-level admin account; a domain admin account is not sufficient **
+**_Note:_ You will need a server-level admin account; a domain admin account is not sufficient**
 - A normal user account could be used, but additional commands would need to be created to manage that user's mailbox/account. Currently, the only actions supported are based on the server-level blocklist; thus, only server-level admin accounts are useful.
 
 3. Type `Login [Username] [password]`
@@ -240,12 +242,12 @@ Example config.json:
 
 - **VirusTotalApiKey:** (Optional) api key to your free or better Virus Total Account
 	- See: [Virus Total](https://www.virustotal.com/)
-	- Virus Total allows more accurate identification CIDR ranges
+	- Virus Total allows more accurate identification of CIDR ranges
 	- Without an api key, IPs are categorized into /24 and /16 networks only
 - **LoggingLevel:** Valid values (Debug, Info, Warning, Error)
 - **Protocol:** http or https
 	- The http protocol to use when communicating with the Smarter Mail api
-- **UseAutoTokenRefresh: ** true or false
+- **UseAutoTokenRefresh:** true or false
 	- If true, the client will maintain an active connection
 	- If false, the API wrapper (SmartMailApiClient) will refresh the token as needed upon the next request
 - **PercentAbuseTrigger:** A number between 0 and 1, to trigger CIDR blocking, if the subnet exceeds this percentage of bad actor IPs.
@@ -256,12 +258,23 @@ Example config.json:
 - **StartupScript:** An array of strings, where each element represents a single line in a startup script
 	- Can be used to configure the CLI to run a set of commands and schedule jobs on startup.
 
+config.json fragment:
+```
+"StartupScript": [
+    "sched 70 docmany 4",
+    "sched 600 make",
+    "wait 5000",
+    "sched 600 run commit_bans.txt",
+    "load",
+    "jobs"
+  ]
+```
 The above startup script does the following:
-- Schedules the `docmany` command to run every 70 seconds, and document up to 4 IPs on the block list using Virus Total data
+- Schedules the `docmany` command to run every 70 seconds, and document up to `4` IPs on the block list using Virus Total data
 - Schedules the `make` command to run every 10 minutes, generating the `commit_bans.txt` script
 - `Wait` 5 seconds so that the `run` command will always run 5 seconds after the `make` command
 - Schedules the `run` command to run every 10 minutes and execute the script `commit_bans.txt`
-- Load the server data into memory
-- Display scheduled jobs
+- Loads the server data into memory
+- Displays scheduled jobs
 
 Credit to: @github/jsakamoto for creating a robust IP address range calculator (https://github.com/jsakamoto/ipaddressrange/).
