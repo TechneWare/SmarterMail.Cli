@@ -10,7 +10,7 @@ namespace SmartMail.Cli
         private static readonly string path;
         private static readonly string configFile;
         public string VirusTotalApiKey { get; set; } = "";
-        public ICommandLogger.LogLevelType LoggingLevel { get; set; } = ICommandLogger.LogLevelType.Debug;
+        public ICommandLogger.LogLevelType LoggingLevel { get; set; } = ICommandLogger.LogLevelType.Info;
         public HttpProtocol Protocol { get; set; } = HttpProtocol.https;
         public string ServerAddress { get; set; } = "[server domain/IP address]";
         public bool UseAutoTokenRefresh { get; set; } = true;

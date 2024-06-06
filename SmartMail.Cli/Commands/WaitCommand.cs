@@ -20,7 +20,7 @@ namespace SmartMail.Cli.Commands
 
         public string[] CommandAlternates => [];
 
-        public string Description => "Waits the specified number of miliseconds";
+        public string Description => "Waits the specified number of milliseconds";
 
         public string ExtendedDescription => "";
 

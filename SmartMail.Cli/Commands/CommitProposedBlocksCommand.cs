@@ -18,7 +18,7 @@ namespace SmartMail.Cli.Commands
 
         public string[] CommandAlternates => ["cp"];
 
-        public string Description => "Commits propposed changes from the current cache (loaded with load command)";
+        public string Description => "Commits proposed changes from the current cache (loaded with load command)";
 
         public string ExtendedDescription => "Should clean up the temp block list and condense all perma blocks into CIDR ranges where possible";
 

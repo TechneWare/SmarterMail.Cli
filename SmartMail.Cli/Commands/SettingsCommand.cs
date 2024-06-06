@@ -42,7 +42,7 @@ namespace SmartMail.Cli.Commands
             settings.ServerAddress = Utils.InputPrompt(settings.ServerAddress, "Server domain/IP address");
             settings.UseAutoTokenRefresh = bool.TryParse(Utils.InputPrompt(settings.UseAutoTokenRefresh.ToString(), "Auto Refresh Auth Tokens? "), out _);
 
-            settings.PercentAbuseTrigger = double.TryParse(Utils.InputRange(.001, 1, () => Utils.InputPrompt(settings.PercentAbuseTrigger.ToString(), "Percent Abuse Trigger")), out double v) ? v : 0;
+            settings.PercentAbuseTrigger = double.TryParse(Utils.InputRange(.005, 1, () => Utils.InputPrompt(settings.PercentAbuseTrigger.ToString(), "Percent Abuse Trigger")), out double v) ? v : 0;
 
             settings.VirusTotalApiKey = Utils.InputPrompt(settings.VirusTotalApiKey, "VirusTotal API Key");
 
