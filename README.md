@@ -24,7 +24,7 @@ The original use case was to:
 
 ### Moving incoming IDS blocks to the blocklist
 This is done as one might expect, by first:
-- Configuring the server's IDS rules to identify bad actor IP addresses is found under Settings > Scurity > IDS Rules.
+- Configuring the server's IDS rules to identify bad actor IP addresses is found under Settings > Security > IDS Rules.
 	- _As I host a small footprint server with only my accounts and a few friends and family using it, I have opted for some pretty strict rules. Depending on your user's needs, your rules may need to be less restrictive._
 	- You can use a few of the IDS rules to act as honey pots and more quickly trap bad actor IP addresses as follows:
 		- Since I have no POP users, I opted to:
@@ -32,7 +32,7 @@ This is done as one might expect, by first:
 			- Set the Denial of Service POP rule to flag any IP that attempts to use it once, with a long block time.
 		- Since I know that all my users have valid passwords that currently work
 			- Set the SMTP and IMAP Password Brute Force rule to block after one failed attempt, with a long block time.
-			- Set the SMTP Harvesting rule to block after 1 bad session, but with a shorter block time—not shorter than the automation waits between executions.
+			- Set the SMTP harvesting rule to block after 1 bad session, but with a shorter block time, which is not shorter than the automation waits between executions.
 	- Even if you don't configure stringent rules because many users will forget their passwords, eventually, you will find you have an extensive list of IPs either showing up and falling off the IDS list after some time or that you have manually moved to the permanent blocklist.
 - Then, remove each IDS block and add/document it in the permanent blocklist.
 
@@ -53,7 +53,7 @@ _See:_ [What is a CIDR](https://www.techtarget.com/searchnetworking/definition/C
 Suppose you have ever looked through the blocklist of an email server of any significant age. In that case, you will notice patterns in the IP addresses that start to appear that indicate that the subnet's owner is likely not trustworthy on any IP address. Therefore, the entire subnet can be blocked.
 
 For Example, consider the following addresses:
-```
+```logos
 80.244.11.65
 80.244.11.118
 80.244.11.119
@@ -66,11 +66,11 @@ It is easy to see the pattern here. The subnet `80.244.11.0/24` appears to be 
 
 By entering IPs such as `80.244.11.0/24` into your blocklist, you can effectively block all the IPs on the `80.244.11.x` subnet with a single entry. We can feel pretty comfortable doing this, as 36 out of 254 IPs, or about 14.2% of the IPs on this subnet, have been found to be bad actors. Thus, this subnet could be considered to have a bad reputation and deserves a CIDR entry on the blocklist, shortening the list by 35 entries.
 
-The `/24` represents the number of bits used in the subnet mask and, thus, the portion of the IP address that contains the subnet. In this case `255.255.255.0` or `11111111 11111111 11111111 00000000` in binary. Therefore we can see that the size of this subnet is the number of IP addresses that can fill out the last segment of the address. In this case 256(0->255), minus 1 for the broadcast address(255) and minus 1 for the 0 address(Legacy broadcast/modern ignore), which leaves you with 254 useable addresses on the subnet.
-However, it can get more complicated since /24 might not be the most accurate description of the 80.244.11.0 subnet.
+The `/24` represents the number of bits used in the subnet mask and, thus, the portion of the IP address that contains the subnet. In this case, `255.255.255.0` or `11111111 11111111 11111111 00000000` in binary. Therefore, we can see that the size of this subnet is the number of IP addresses that can fill out the last segment of the address. In this case, 256(0->255), minus 1 for the broadcast address(255), and minus 1 for the 0 address(Legacy broadcast/modern ignore), which leaves you with 254 useable addresses on the subnet.
+However, it can get more complicated since /24 might not accurately describe the 80.244.11.0 subnet.
 
-Consider this; what if the IP list looked more like this:
-```
+Consider this: what if the IP list looked more like this:
+```logos
 80.244.9.65
 80.244.10.118
 80.244.11.119
@@ -84,9 +84,9 @@ You might be tempted to use `80.244.0.0/16` as the CIDR group to block on. So,
 So, the goal is to identify subnets that are not trusted while not penalizing subnets with only a few bad actors in them and blocking traffic as minimally and optimally as possible. At the same time, automate this as much as possible to get consistent documentation and reduce the amount of manual interaction with the server to maintain the blocklist. Plus, it might be nice to rebuild the blocklist or use the captured data in other systems/firewalls, etc.
 
 ## The SmarterMail.CLI Utility
-The SmarterMail.CLI utility was created to automate actions against a SmarterMail server's API and manage the server's blocklist.
+The SmarterMail.CLI utility automates actions against a SmarterMail server's API and manages the server's blocklist.
 
-Writing an API wrapper and then creating a hard-coded process to manage this list would be possible, but I chose to use the command pattern instead. Exploring the API by hand was becoming tedious, and I had to maintain access/refresh tokens, so it just made sense to make something that could deal with token management for me while I was free to explore the API.
+Writing an API wrapper and creating a hard-coded process to manage this list would be possible, but I used the command pattern instead. Exploring the API by hand was becoming tedious, and I had to maintain access/refresh tokens, so it just made sense to make something that could manage tokens for me while I was free to explore the API.
 
 This then grew into the ability to auto-log into the server on launch, Script one or more commands into a file, execute them, and eventually adjust the process using Virus Total data to identify the CIDR groups accurately.
 
@@ -98,7 +98,7 @@ _The jargon evolved here: IPs on the permanent blocklist are called PermaBlocks,
 	- At the prompt, type `settings` and press ENTER. Follow the prompts to configure the settings.
 	- If this is the first run, you will need to configure the Smarter Mail Server's address where the API endpoint can be found, e.g., `webmail.example.com`.
 2. Pressing `ENTER` at the prompt will show a list of available commands
-```
+```fancy
 Usage: commandName [Arguments]
 Commands:
 
@@ -143,7 +143,7 @@ Most commands have a short version, and you can get those by typing `Help [Comm
 
 4. Type `LoadBlockedIpData` or just `load`, which will load the Count of IDS blocks, IDS list and the blocklist into memory.
 	- At the same time it will generate a proposed blocking strategy
-```
+```logos
 	[6/6/2024 12:58:20 AM UTC]Info      : ---- Loading IP block data ----
 	[6/6/2024 12:58:20 AM UTC]Info      : Script loaded with 3 lines
 	[6/6/2024 12:58:20 AM UTC]Info      : ---- Blocked IP Counts ----
@@ -178,7 +178,7 @@ This output shows that there are currently no IDS blocks (Temp Blocked IPs), 888
 5. Type `Make` to generate the script that would implement the proposed blocking actions
 	- You should see something like `Script saved to file: [path of executable]/commit_bans.txt`
 Example Script:
-```
+```logos
 # AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [6/1/2024 4:53:59 PM UTC]
 
 # Perma ban the 80.255.11.0/24 subnet
@@ -250,13 +250,13 @@ Example config.json:
 - **UseAutoTokenRefresh:** true or false
 	- If true, the client will maintain an active connection
 	- If false, the API wrapper (SmartMailApiClient) will refresh the token as needed upon the next request
-- **PercentAbuseTrigger:** A number between 0 and 1, to trigger CIDR blocking, if the subnet exceeds this percentage of bad actor IPs.
+- **PercentAbuseTrigger:** A number between 0 and 1 that triggers CIDR blocking if the subnet exceeds this percentage of bad actor IPs.
 	- The settings command limits this to .005 to 1, as .005 in a /24 subnet requires at least 2 IPs to trigger blocking.
-- **UseAutoLogin:** If true will attempt to use the AutoLoginUsername and AutoLoginPassword to connect to the server at launch.
+- **UseAutoLogin:** If true, attempt to connect to the server at launch using the AutoLoginUsername and AutoLoginPassword.
 - **AutoLoginUsername:** The account to login with
 - **AutoLoginPassword:** The password to the account
 - **StartupScript:** An array of strings, where each element represents a single line in a startup script
-	- Can be used to configure the CLI to run a set of commands and schedule jobs on startup.
+	- Can be used to configure the CLI to run a set of commands and schedule startup jobs.
 
 config.json fragment:
 ```json
@@ -270,7 +270,7 @@ config.json fragment:
   ]
 ```
 The above startup script does the following:
-- Schedules the `docmany` command to run every 70 seconds, and document up to `4` IPs on the block list using Virus Total data
+- Schedules the `docmany` command to run every 70 seconds and document up to `4` IPs on the block list using Virus Total data
 - Schedules the `make` command to run every 10 minutes, generating the `commit_bans.txt` script
 - `Wait` 5 seconds so that the `run` command will always run 5 seconds after the `make` command
 - Schedules the `run` command to run every 10 minutes and execute the script `commit_bans.txt`
@@ -278,7 +278,7 @@ The above startup script does the following:
 - Displays scheduled jobs
 
 ### About Virus Total
-Currently, the CLI is hard-coded to the free account quota limits. However, if you're paying for a Virus Total account and have higher quota limits, you have the power to modify the Globals.cs file to set the limits as you would like. This flexibility allows you to tailor the usage to your specific needs. I'll probably refactor this and make it configurable soon, but right now, that's how it works.
+Currently, the CLI is hard-coded to the free account quota limits. However, if you're paying for a Virus Total account and have higher quota limits, you can modify the Globals.cs file to set the limits as you would like. This flexibility allows you to tailor the usage to your specific needs. I'll probably refactor this and make it configurable soon, but that's how it works right now.
 
 Quota limits are set in the Globals.cs file:
 ```csharp
@@ -288,19 +288,19 @@ public static int vtDailyQuota { get; set; } = 500;
 
 If you launch with the above script, there may be a period where it's collecting data on all the IPs in your block list from Virus Total. The free account gives you 4 hits/minute and 500 hits/day, so it's possible you may go over this initially. That's okay because a built-in quota tracking system prevents further hits against the API when you're over your quota. This system ensures that your usage is always within the set limits. When the quota period expires, it will continue documenting IPs without any intervention required. Currently its hard coded to use the free account values, but if you modify the Globals.cs file, you can set your own quota limits.
 
-Unfortunately, Virus Total does not give free accounts access to the endpoint that gives quota information, and they don't return quota information in the headers. There is also a 15.5k hits/month quota, but I did not implement that. Hopefully, I won't need to. In any case, if an API request detects that the quota was reached, it will not allow further hits until the next day. The day quota expires at midnight UTC and the month quota will reset at midnight UTC on the 1st of the month.
+Unfortunately, Virus Total does not give free accounts access to the endpoint that gives quota information, and they don't return quota information in the headers. There is also a 15.5k hits/month quota, but I did not implement that. Hopefully, I won't need to. If an API request detects that the quota was reached, it will not allow further hits until the next day. The day quota expires at midnight UTC, and the month quota will be reset at midnight UTC on the 1st of the month.
 
 ### Is it working?
 Let it run for a few days if needed or forever. You should notice that your IDS list remains primarily empty, only containing IPs that were last detected within 10 minutes, while your block list will continue to grow.  
 
-IP descriptions on the block list are initially set to the basic information available from the IDS block, EG: What protocol, country etc. the IP address was found using. Every time `docmany 4` executes, it will look for up to 4 undocumented IPs in the block list, query Virus Total, and refresh their descriptions. Future lookups against an IP will come from that file instead of using up a hit on the Virus Total API.
+IP descriptions on the block list are initially set to the basic information available from the IDS block, e.g., what protocol, country, etc., the IP address was found using. Every time `docmany 4` executes, it will look for up to 4 undocumented IPs in the block list, query Virus Total, and refresh their descriptions. Future lookups against an IP will come from that file instead of using up a hit on the Virus Total API.
 
 Once the IP has been documented, it will have an accurate CIDR block assigned to it and can now be considered by the `make` command for inclusion in the commit_bans.txt script file.
 
-You can see that its working, if you examine the logs for POP, IMAP or SMTP.  SMTP is likely the most active.
+If you examine the logs for POP, IMAP, or SMTP, you can see that it's working.  SMTP is likely the most active.
 
 Sample SMTP log for a single blocked request:
-```
+```logos
 15:24:36.585 [80.244.11.121][60044376] connected at 6/6/2024 3:24:36 PM
 15:24:36.585 [80.244.11.121][60044376] "421 Server is busy, try again later." response returned.
 15:24:36.585 [80.244.11.121][60044376] IP is blacklisted
@@ -309,7 +309,7 @@ Sample SMTP log for a single blocked request:
 If you see this going on, then it's working.
 
 ## Commands
-All commands can be used in a script, used in interactive mode or used from the commandline unless otherwise noted.
+Unless otherwise noted, all commands can be used in a script, in interactive mode, or from the command line.
 
 ### Clear
 
