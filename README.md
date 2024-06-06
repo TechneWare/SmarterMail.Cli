@@ -278,7 +278,7 @@ The above startup script does the following:
 - Displays scheduled jobs
 
 ### About Virus Total
-Currently the CLI is hard coded to the free acount quota limits.  If your paying for a Virus Total account and have higher quota limits, modify the Globals.cs file to set the limits how you would like.  I'll probably refactor this and make it configurable soon, but right now thats how it works.
+Currently, the CLI is hard-coded to the free account quota limits. However, if you're paying for a Virus Total account and have higher quota limits, you have the power to modify the Globals.cs file to set the limits as you would like. This flexibility allows you to tailor the usage to your specific needs. I'll probably refactor this and make it configurable soon, but right now, that's how it works.
 
 Quota limits set in the Globals.cs file:
 ```
@@ -286,14 +286,14 @@ public static int vtMinuteQuota { get; set; } = 4;
 public static int vtDailyQuota { get; set; } = 500;
 ```
 
-If you launch with the above script, there may be a period of time where it's collecting data on all the IPs in your block list from Virus Total. The free account gives you 4 hits/min and 500 hits/day, so it's possible you may go over this initially.  That's ok, there is built in quota tracking to prevent furthar hits against the API when your over your quota.  When the quota period expires, it will continue documenting IPs without any intervention required.  Currently its hard coded to use the free acount values, but if you modify the Globals.cs file, you can set your own quota limits.
+If you launch with the above script, there may be a period where it's collecting data on all the IPs in your block list from Virus Total. The free account gives you 4 hits/minute and 500 hits/day, so it's possible you may go over this initially. That's okay because a built-in quota tracking system prevents further hits against the API when you're over your quota. This system ensures that your usage is always within the set limits. When the quota period expires, it will continue documenting IPs without any intervention required. Currently its hard coded to use the free account values, but if you modify the Globals.cs file, you can set your own quota limits.
 
-Unfortunatly it appears that Virus Total does not give free accounts access to the endpoint that gives quota information, and they don't seem to return quota information in the headers, so the only option available to free users, is to locally track hits/min and hits/day.  There is also a 15.5k hits/month quota, but I did not implement that.  Hopefully I won't need to.  In any case, if an API request detects that the quota was reached, it will not allow furthar hits until the next day.  The day quota expires at midnight UTC and the month quota will reset at midnight UTC on the 1st of the month.
+Unfortunately, Virus Total does not give free accounts access to the endpoint that gives quota information, and they don't return quota information in the headers. There is also a 15.5k hits/month quota, but I did not implement that. Hopefully I won't need to. In any case, if an API request detects that the quota was reached, it will not allow further hits until the next day. The day quota expires at midnight UTC and the month quota will reset at midnight UTC on the 1st of the month.
 
 ### Is it working?
-Let it run for a few days if needed, or forever if you want. You should notice that your IDS list remains mostly empty, only containing IPs that were last detected within 10 minutes, while your block list will continue to grow.  
+Let it run for a few days if needed or forever. You should notice that your IDS list remains primarily empty, only containing IPs that were last detected within 10 minutes, while your block list will continue to grow.  
 
-IP descriptions on the block list are initially set to the basic information available from the IDS block, EG: What protocol, country etc. the IP address was found using. Every time `docmany 4` executes, it will look for up to 4 undocumented IPs in the block list, query Virus Total and refresh their descriptions. It will also save the new IP data from Virus Total to IpInfo.json, so that any future lookups against an IP will come from that file instead of using up a hit on the Virus Total API.
+IP descriptions on the block list are initially set to the basic information available from the IDS block, EG: What protocol, country etc. the IP address was found using. Every time `docmany 4` executes, it will look for up to 4 undocumented IPs in the block list, query Virus Total, and refresh their descriptions. Future lookups against an IP will come from that file instead of using up a hit on the Virus Total API.
 
 Once the IP has been documented, it will have an accurate CIDR block assigned to it and can now be considered by the `make` command for inclusion in the commit_bans.txt script file.
 
@@ -448,7 +448,7 @@ _Refresh token tracking starts upon successful login_
 | :--- | :--- | :--- |
 | `MakeScript` `make` | Makes a commit script out of the proposed bans to be executed later |
 
-_Script is aved to the file `commit_bans.txt` in the directory of the executable_
+_Script is saved to the file `commit_bans.txt` in the directory of the executable_
 
 ### Print
 
