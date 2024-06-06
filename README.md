@@ -94,7 +94,7 @@ This then grew into the ability to auto-log into the server on launch, Script on
 
 _The jargon evolved here: IPs on the permanent blocklist are called PermaBlocks, and IPs on the IDS(Temporary list) are called TempBlocks._
 
-1. Clone/Compile/Run this solution
+1. Clone/Compile/Run the solution
 	- At the prompt, type `settings` and press ENTER. Follow the prompts to configure the settings.
 	- If this is the first run, you will need to configure the Smarter Mail Server's address where the API endpoint can be found, e.g., `webmail.example.com`.
 2. Pressing `ENTER` at the prompt will show a list of available commands
@@ -276,5 +276,253 @@ The above startup script does the following:
 - Schedules the `run` command to run every 10 minutes and execute the script `commit_bans.txt`
 - Loads the server data into memory
 - Displays scheduled jobs
+
+### About Virus Total
+Currently the CLI is hard coded to the free acount quota limits.  If your paying for a Virus Total account and have higher quota limits, modify the Globals.cs file to set the limits how you would like.  I'll probably refactor this and make it configurable soon, but right now thats how it works.
+
+Quota limits set in the Globals.cs file:
+```
+public static int vtMinuteQuota { get; set; } = 4;
+public static int vtDailyQuota { get; set; } = 500;
+```
+
+If you launch with the above script, there may be a period of time where it's collecting data on all the IPs in your block list from Virus Total. The free account gives you 4 hits/min and 500 hits/day, so it's possible you may go over this initially.  That's ok, there is built in quota tracking to prevent furthar hits against the API when your over your quota.  When the quota period expires, it will continue documenting IPs without any intervention required.  Currently its hard coded to use the free acount values, but if you modify the Globals.cs file, you can set your own quota limits.
+
+Unfortunatly it appears that Virus Total does not give free accounts access to the endpoint that gives quota information, and they don't seem to return quota information in the headers, so the only option available to free users, is to locally track hits/min and hits/day.  There is also a 15.5k hits/month quota, but I did not implement that.  Hopefully I won't need to.  In any case, if an API request detects that the quota was reached, it will not allow furthar hits until the next day.  The day quota expires at midnight UTC and the month quota will reset at midnight UTC on the 1st of the month.
+
+### Is it working?
+Let it run for a few days if needed, or forever if you want. You should notice that your IDS list remains mostly empty, only containing IPs that were last detected within 10 minutes, while your block list will continue to grow.  
+
+IP descriptions on the block list are initially set to the basic information available from the IDS block, EG: What protocol, country etc. the IP address was found using. Every time `docmany 4` executes, it will look for up to 4 undocumented IPs in the block list, query Virus Total and refresh their descriptions. It will also save the new IP data from Virus Total to IpInfo.json, so that any future lookups against an IP will come from that file instead of using up a hit on the Virus Total API.
+
+Once the IP has been documented, it will have an accurate CIDR block assigned to it and can now be considered by the `make` command for inclusion in the commit_bans.txt script file.
+
+You can see that its working, if you examine the logs for POP, IMAP or SMTP.  SMTP is likely the most active.
+
+Sample SMTP log for a single blocked request:
+```
+15:24:36.585 [80.244.11.121][60044376] connected at 6/6/2024 3:24:36 PM
+15:24:36.585 [80.244.11.121][60044376] "421 Server is busy, try again later." response returned.
+15:24:36.585 [80.244.11.121][60044376] IP is blacklisted
+15:24:36.585 [80.244.11.121][60044376] disconnected at 6/6/2024 3:24:36 PM
+```
+If you see this going on, then it's working.
+
+## Commands
+All commands can be used in a script, used in interactive mode or used from the commandline unless otherwise noted.
+
+### Clear
+
+| Command Aliases | Comments|
+| :--- | :--- |
+| `clear` `cls` | Clears the screen, can be used from command line, but mostly used for interactive mode.|
+
+### CommitProposed
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `CommitProposed` `cp` | Commits propposed changes from the current cache (loaded with load command). Cleans up the IDs blocks and condenses all perma blocks into CIDR ranges where possible. |
+
+_Note: This command does not use the script engine, it will immediatly execute the plan stored in memory. It is recommended to use the Make/Run commands instead_
+
+### DeleteBan
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `DeleteBan` `db` | IpAddress/CIDR | Removes an IP/CIDR from the permanent blacklist |
+
+### DeleteTemp
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `DeleteTemp` `dt` | IpAddress | Removes an IP from the temporary block list or IDS blocks |
+
+### DMany
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `DMany` `dm` `docmany` | number | Documents 1 or more undocumented perma blocked IPs |
+
+_Note: This command requires a working Virus Total api key_
+_For free accounts, it is recommended not to use more then `4` for the `number` parameter, as 4 hits/min is the quota_
+
+### Doc
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `Doc` | IpAddress protocol noload nosave | Documents an IP using Virus Total Data by setting the description in the servers settings>security>black list |
+
+- **IpAddress:** An IP address that is currently listed in the block list the server under settings>security>black list
+- **protocol:** The protocol that was used when the IP was banned. EG: SMTP, POP, IMAP
+- **noload:** Prevents reloading of the cache after execution. Useful in scripts where many doc command are issued.  Issue a `load` command to reload the cache later.
+- **nosave:** Prevents saving of Virus Total data to the IpInfo.json file after execution. Useful in scripts where many doc command are issued.  Issue a `SaveIpInfo` command to reload the cache later.
+
+### IpInfo
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `IpInfo` `ip` | IpAddress | Attempts to retreive IP Info from Virus Total for the specified IP Address |
+
+_Display only - will save the returned data to IpInfo.json_
+
+### GetPermaBlockIps
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `GetPermaBlockIps` `gpbip` `gpb` | show | loads permanetly blocked IP addresses to memory |
+
+_If `show` is included, will also display the loaded data_
+
+### GetTempIpBlockCounts
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `GetTempIpBlockCounts` `gtbc` `tbc` | displays the count of temporary IP blocks by service type |
+
+### GetTempBlockIps
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `GetTempBlockIps` `gtbip` `tb` | loads temporarily blocked IP addresses to memory and displays them |
+
+### Help
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `Help` `h` | commandName | Displays help on the specified command |
+
+### Interactive
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `Interactive` `shell` | args | Launches an interactive shell |
+
+_Used to interact with a user_
+
+- **args:** Any arguments you want to pass to the shell, same as executing from the command line
+
+### InvalidateCache
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `InvalidateCache` | Invalidates the current cache, signaling other commands to reload it |
+
+_Used in scripts to make sure the cache appears invalid for follow on commands_
+
+### Kill
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `kill` | JobId | Kills the job with Id = JobId |
+
+_See: `Sched` to schedule a job_
+
+### Jobs
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `Jobs` | Displays any running jobs |
+
+_Use this command to get the JobId for a job_
+_See: `Sched` to schedule a job_
+
+### LoadBlockedIpData
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `LoadBlockedIpData` `load` | Loads all sources of blocked IP data into memory and generates a blocking plan |
+
+_Data is anyalized with find subnets to identify groups of malicious IPs_
+
+### Login
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `Login` | Username Password | Logs into the API, retreiving auth tokens for the current session |
+
+_Refresh token tracking starts upon successful login_
+
+### MakeScript
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `MakeScript` `make` | Makes a commit script out of the proposed bans to be executed later |
+
+_Script is aved to the file `commit_bans.txt` in the directory of the executable_
+
+### Print
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `Print` | message | Prints a message to the output
+
+_Useful in scripts_
+
+### Quit
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `Quit` `exit` | End the application if in interactive mode |
+
+### RunScript
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `RunScript` `run` `exe` | FullPathToScript | Executes a saved script EG: RunScript C:\temp\myscript.txt or run c:\temp\myscript.txt |
+
+### SaveIpInfo
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `SaveIpInfo` | Saves Cached IP info from Virus Total to file `ipinfo.json` |
+
+### PermaBan
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `PermaBan` `pb` | IP/CIDR Description | Adds or Updates an IP to the permanent block list |
+
+_EG:_
+_pb 192.168.1.1 I banned this IP_
+_pb 192.168.1.0/24 I banned this CIDR_
+
+### Sched
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `Sched` | #Seconds commandToRun | Schedules a job to run on an interval until stopped |
+
+_EG: To run a script every 30 seconds use: `sched 30 run c:\temp\myscript.txt`_
+
+### Session
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `Session` | Displays info about the current session |
+
+_This displays information about the currently logged on user_
+
+### Settings
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `Settings` `set` | Configures settings |
+
+_Settings are saved to `config.json`_
+
+### Version
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `Version` `ver` `v` | Display Version/Current build Info |
+
+### Wait
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `Wait` | milliseconds | Waits the specified number of miliseconds |
+
+_Useful in scripts_
+_EG: to set the timing between two jobs with the same period, introduce a delay between the `sched` commands_
 
 Credit to: @github/jsakamoto for creating a robust IP address range calculator (https://github.com/jsakamoto/ipaddressrange/).
