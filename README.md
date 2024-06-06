@@ -5,7 +5,7 @@ This is a solution with two projects
 - A REST client for the Smarter Mail Server API
 - A simple command line utility to manage an IP Black List on a SmarterMail server using the server's API
 
-Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the block list. However, I created this initial version to solve my use case, which is automated blocklist management.
+Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the block list. However, I created this initial version to solve my use case: automated blocklist management.
 The command line utility grew into something that can be extended to perform any action against a Smarter Mail server. 
 
 With features such as:
@@ -16,7 +16,7 @@ With features such as:
 - Scheduled jobs
 - Integration with Virus Total
 
-The original use case, was to:
+The original use case was to:
 - Automatically move all incoming IDS blocks to the blocklist with consistent documentation.
 - Optimize the server's blocklist by identifying CIDR groups and collapsing IP entries.
 
@@ -24,7 +24,7 @@ The original use case, was to:
 
 ### Moving incoming IDS blocks to the blocklist
 This is done as one might expect, by first:
-- Configuring the server's IDS rules to identify bad actor IP addresses, found under Settings > Scurity > IDS Rules.
+- Configuring the server's IDS rules to identify bad actor IP addresses is found under Settings > Scurity > IDS Rules.
 	- _As I host a small footprint server with only my accounts and a few friends and family using it, I have opted for some pretty strict rules. Depending on your user's needs, your rules may need to be less restrictive._
 	- You can use a few of the IDS rules to act as honey pots and more quickly trap bad actor IP addresses as follows:
 		- Since I have no POP users, I opted to:
@@ -32,7 +32,7 @@ This is done as one might expect, by first:
 			- Set the Denial of Service POP rule to flag any IP that attempts to use it once, with a long block time.
 		- Since I know that all my users have valid passwords that currently work
 			- Set the SMTP and IMAP Password Brute Force rule to block after one failed attempt, with a long block time.
-			- Set the SMTP Harvesting rule to block after 1 bad session, but with a shorter block time—not shorter than the automation waits between executions.
+			- Set the SMTP Harvesting rule to block after 1 bad session, but with a shorter block timeâ€”not shorter than the automation waits between executions.
 	- Even if you don't configure stringent rules because many users will forget their passwords, eventually, you will find you have an extensive list of IPs either showing up and falling off the IDS list after some time or that you have manually moved to the permanent blocklist.
 - Then, remove each IDS block and add/document it in the permanent blocklist.
 
@@ -62,12 +62,12 @@ For Example, consider the following addresses:
 80.244.11.244
 ```
 
-It is easy to see the pattern here. The subnet `80.244.11.0/24` appears to be behaving poorly. This is an actual subnet that attacked my server 36 times while I was writing this.
+It is easy to see the pattern here. The subnetÂ `80.244.11.0/24`Â appears to be behaving poorly. This is an actual subnet that attacked my server 36 times while I was writing this.
 
-By entering IPs such as `80.244.11.0/24` into your blocklist, you can effectively block all the IPs on the `80.244.11.x` subnet with a single entry. We can feel pretty comfortable doing this, as 36 out of 254 IPs, or about 14.2% of the IPs on this subnet, have been found to be bad actors. Thus, this subnet could be considered to have a bad reputation and deserves a CIDR entry on the blocklist, shortening the list by 35 entries.
+By entering IPs such asÂ `80.244.11.0/24`Â into your blocklist, you can effectively block all the IPs on theÂ `80.244.11.x`Â subnet with a single entry. We can feel pretty comfortable doing this, as 36 out of 254 IPs, or about 14.2% of the IPs on this subnet, have been found to be bad actors. Thus, this subnet could be considered to have a bad reputation and deserves a CIDR entry on the blocklist, shortening the list by 35 entries.
 
-The `/24` represents the number of bits used in the subnet mask, and thus the portion of the IP address that contains the subnet. In this case `255.255.255.0` or `11111111 11111111 11111111 00000000` in binary. And therefore we can see that the size of this subnet is the number of IP addresses that can fill out the last segment of the address. In this case 256(0->255), minus 1 for the broadcast address(255) and minus 1 for the 0 address(Legacy broadcast/modern ignore), which leaves you with 254 useable addresses on the subnet.
-However, it can get more complicated since /24 might not be the most accurate description of the 80.244.11.0 subnet.
+The `/24` represents the number of bits used in the subnet mask and, thus, the portion of the IP address that contains the subnet. In this caseÂ `255.255.255.0`Â orÂ `11111111 11111111 11111111 00000000`Â in binary. Therefore we can see that the size of this subnet is the number of IP addresses that can fill out the last segment of the address. In this case 256(0->255), minus 1 for the broadcast address(255) and minus 1 for the 0 address(Legacy broadcast/modern ignore), which leaves you with 254 useable addresses on the subnet.
+However, it can get more complicated sinceÂ /24Â might not be the most accurate description of the 80.244.11.0 subnet.
 
 Consider this; what if the IP list looked more like this:
 ```
@@ -79,7 +79,7 @@ Consider this; what if the IP list looked more like this:
 80.244.14.244
 ```
 
-You might be tempted to use `80.244.0.0/16` as the CIDR group to block on. So, how many IPs is this? Well, roughly 65,025 possible addresses, which would equate to approximately 0.05% of the IPs found on this subnet being bad actors. You might not feel comfortable blocking this entire address space.
+You might be tempted to useÂ `80.244.0.0/16`Â as the CIDR group to block on. So, how many IPs is this? Well, roughly 65,025 possible addresses, which would equate to approximately 0.05% of the IPs found on this subnet being bad actors. You might not feel comfortable blocking this entire address space.
 
 So, the goal is to identify subnets that are not trusted while not penalizing subnets with only a few bad actors in them and blocking traffic as minimally and optimally as possible. At the same time, automate this as much as possible to get consistent documentation and reduce the amount of manual interaction with the server to maintain the blocklist. Plus, it might be nice to rebuild the blocklist or use the captured data in other systems/firewalls, etc.
 
@@ -95,8 +95,8 @@ This then grew into the ability to auto-log into the server on launch, Script on
 _The jargon evolved here: IPs on the permanent blocklist are called PermaBlocks, and IPs on the IDS(Temporary list) are called TempBlocks._
 
 1. Clone/Compile/Run the solution
-	- At the prompt, type `settings` and press ENTER. Follow the prompts to configure the settings.
-	- If this is the first run, you will need to configure the Smarter Mail Server's address where the API endpoint can be found, e.g., `webmail.example.com`.
+	- At the prompt, typeÂ `settings`Â and press ENTER. Follow the prompts to configure the settings.
+	- If this is the first run, you will need to configure the Smarter Mail Server's address where the API endpoint can be found, e.g.,Â `webmail.example.com`.
 2. Pressing `ENTER` at the prompt will show a list of available commands
 ```
 Usage: commandName [Arguments]
@@ -132,7 +132,7 @@ Version                           - Display Version Info
 Wait [milliseconds]               - Waits the specified number of miliseconds
 ```
 
-Most commands have a short version, and you can get those by typing `Help [CommandName]`
+Most commands have a short version, and you can get those by typingÂ `Help [CommandName]`
 
 **_Note:_ You will need a server-level admin account; a domain admin account is not sufficient**
 - A normal user account could be used, but additional commands would need to be created to manage that user's mailbox/account. Currently, the only actions supported are based on the server-level blocklist; thus, only server-level admin accounts are useful.
@@ -218,7 +218,7 @@ load
 At the prompt enter `settings` and follow the prompts to modify the settings or edit the config.json file
 
 Example config.json:
-```
+```json
 {
   "VirusTotalApiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
   "LoggingLevel": "Info",
@@ -259,7 +259,7 @@ Example config.json:
 	- Can be used to configure the CLI to run a set of commands and schedule jobs on startup.
 
 config.json fragment:
-```
+```json
 "StartupScript": [
     "sched 70 docmany 4",
     "sched 600 make",
@@ -280,15 +280,15 @@ The above startup script does the following:
 ### About Virus Total
 Currently, the CLI is hard-coded to the free account quota limits. However, if you're paying for a Virus Total account and have higher quota limits, you have the power to modify the Globals.cs file to set the limits as you would like. This flexibility allows you to tailor the usage to your specific needs. I'll probably refactor this and make it configurable soon, but right now, that's how it works.
 
-Quota limits set in the Globals.cs file:
-```
+Quota limits are set in the Globals.cs file:
+```csharp
 public static int vtMinuteQuota { get; set; } = 4;
 public static int vtDailyQuota { get; set; } = 500;
 ```
 
 If you launch with the above script, there may be a period where it's collecting data on all the IPs in your block list from Virus Total. The free account gives you 4 hits/minute and 500 hits/day, so it's possible you may go over this initially. That's okay because a built-in quota tracking system prevents further hits against the API when you're over your quota. This system ensures that your usage is always within the set limits. When the quota period expires, it will continue documenting IPs without any intervention required. Currently its hard coded to use the free account values, but if you modify the Globals.cs file, you can set your own quota limits.
 
-Unfortunately, Virus Total does not give free accounts access to the endpoint that gives quota information, and they don't return quota information in the headers. There is also a 15.5k hits/month quota, but I did not implement that. Hopefully I won't need to. In any case, if an API request detects that the quota was reached, it will not allow further hits until the next day. The day quota expires at midnight UTC and the month quota will reset at midnight UTC on the 1st of the month.
+Unfortunately, Virus Total does not give free accounts access to the endpoint that gives quota information, and they don't return quota information in the headers. There is also a 15.5k hits/month quota, but I did not implement that. Hopefully, I won't need to. In any case, if an API request detects that the quota was reached, it will not allow further hits until the next day. The day quota expires at midnight UTC and the month quota will reset at midnight UTC on the 1st of the month.
 
 ### Is it working?
 Let it run for a few days if needed or forever. You should notice that your IDS list remains primarily empty, only containing IPs that were last detected within 10 minutes, while your block list will continue to grow.  
