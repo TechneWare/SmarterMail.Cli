@@ -291,7 +291,7 @@ The above startup script does the following:
 - Displays scheduled jobs
 
 ### About Virus Total
-Currently, the CLI is hard-coded to the free account quota limits. However, if you're paying for a Virus Total account and have higher quota limits, you can modify the Globals.cs file to set the limits as you would like. This flexibility allows you to tailor the usage to your specific needs. I'll probably refactor this and make it configurable soon, but that's how it works right now.
+Currently, the CLI is hard-coded to the free account quota limits. However, if you're paying for a Virus Total account and have higher quota limits, you can modify the Globals.cs file to set the limits as you would like. I'll probably refactor this and make it configurable soon, but that's how it works right now.
 
 Quota limits are set in the Globals.cs file:
 ```csharp
@@ -306,7 +306,7 @@ Unfortunately, Virus Total does not give free accounts access to the endpoint th
 ### Is it working?
 Let it run for a few days if needed or forever. You should notice that your IDS list remains primarily empty, only containing IPs that were last detected within 10 minutes, while your block list will continue to grow.  
 
-IP descriptions on the block list are initially set to the basic information available from the IDS block, e.g., what protocol, country, etc., the IP address was found using. Every time `docmany 4` executes, it will look for up to 4 undocumented IPs in the block list, query Virus Total, and refresh their descriptions. Future lookups against an IP will come from that file instead of using up a hit on the Virus Total API.
+IP descriptions on the block list are initially set to the basic information available from the IDS block, e.g., what protocol, country, etc., the IP address was found using. Every time `docmany 4` executes, it will look for up to 4 undocumented IPs in the block list, query Virus Total, and refresh their descriptions. History is saved to `IpInfo.json`, and future lookups against an IP will come from that file instead of using up a hit on the Virus Total API.  To completely forget an IP, remove it from this file and the server's block list. 
 
 Once the IP has been documented, it will have an accurate CIDR block assigned to it and can now be considered by the `make` command for inclusion in the commit_bans.txt script file.
 
