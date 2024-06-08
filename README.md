@@ -485,7 +485,7 @@ _Useful in scripts_
 
 _Searches the IP history data (IpInfo.json) for IPs that start with IpFragment or all IPs if * is used, and restores the individual IP blocks if they are missing._
 
-EG: 
+For Example: 
 - _`Restore *` will restore all IPs and remove all CIDR subnets_
 - _`Restore 192.168.1` will restore all IPs that start with 192.168.1 and remove any CIDR groups that match on 192.168.1_
 
