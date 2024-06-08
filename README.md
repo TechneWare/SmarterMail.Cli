@@ -521,6 +521,8 @@ _pb 192.168.1.0/24 I banned this CIDR_
 
 _EG: To run a script every 30 seconds use: `sched 30 run c:\temp\myscript.txt`_
 
+_**Note:** This command requires the program to run in interactive mode.  If run from the command line, the app will enter interactive mode._
+
 ### Session
 
 | Command Alias | Comments |
