@@ -134,6 +134,7 @@ Login [UserName Password]         - Logs into the API
 MakeScript                        - Makes a commit script out of the proposed bans to be executed later
 Print [message]                   - Prints a message to the output
 Quit                              - Ends the program
+Restore [IpFragment | *]          - Restores the black list from previously stored data.
 RunScript [FullPathToScript]      - Executes a saved script EG: RunScript C:\temp\myscript.txt or run c:\temp\myscript.txt
 SaveIpInfo                        - Saves Cached IP info from VirusTotal to file ipinfo.json
 PermaBan [IP/CIDR Description]    - Adds or Updates an IP to the permanent blacklist
@@ -475,6 +476,19 @@ _Useful in scripts_
 | Command Alias | Comments |
 | :--- | :--- |
 | `Quit` `exit` | End the application if in interactive mode |
+
+### Restore
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `Restore` | IpFragment or * | Restores the black list from previously stored data. |
+
+_Searches the IP history data (IpInfo.json) for IPs that start with IpFragment or all IPs if * is used, and restores the individual IP blocks if they are missing._
+EG: 
+_`Restore *` will restore all IPs and remove all CIDR subnets_
+_`Restore 192.168.1` will restore all IPs that start with 192.168.1 and remove any CIDR groups that match on 192.168.1_
+
+_**Note** After a restore, `make` may want to re-create CIDR blocks and remove IPs from the block list, depending on how your settings are configured_
 
 ### RunScript
 
