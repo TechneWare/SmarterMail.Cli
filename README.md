@@ -102,9 +102,9 @@ _The jargon evolved here: IPs on the permanent blocklist are called PermaBlocks,
 		- For 64bit Arm: `dotnet publish --runtime linux-arm64 --self-contained` 
 		- For 32bit Arm: `dotnet publish --runtime linux-arm --self-contained`
   			- add `-o [output folder]` to redirect to your desired output folder
+      		- I tried using 64bit Arm on a Raspberry PI 4b, but I believe there is a bug with 64bit compiling at this time, so I ended up using the 32bit version. It could also be that my Raspberry PI has had its OS upgraded in place serveral times, and so, even though the OS reports as being 64bit, it only wants to work with 32bit compiled ARM.  Try both ways if your currious.
   		- Switch folders to `/bin/Release/net8.0/linux-arm/` or the specified output folder, and execute with `./SmartMail.Cli`
     		- The process should be similar for other Linux distros; provide the proper runtime `--runtime [runtime for your platform]`.
-      			- I tried using 64bit Arm on a Raspberry PI 4b, but I believe there is a bug with 64bit compiling at this time, so I ended up using the 32bit version.
          		- See: [.NET RID Catalog](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog) for your particular platform.
 	- At the prompt, type `settings` and press ENTER. Follow the prompts to configure the settings.
 		- If this is the first run, you must configure the Smarter Mail Server's address where the API endpoint can be found, e.g., `webmail.example.com`.
