@@ -27,7 +27,7 @@ namespace SmartMail.Cli.Models
             .Where(i => !i.ToString().EndsWith(".0") && !i.ToString().EndsWith(".255")) //Don't include unuseable addresses
             .Count();
         //Gets the average score assigned to each of the member IPs
-        public double AvgScore => BlockedIps.Average(i => i.Score);
+        public double AvgScore => BlockedIps.Where(i => i.Score > 0).Average(i => i.Score);
         //Used to match to IPs when Virus Total data is not available
         public string SubnetBase
         {

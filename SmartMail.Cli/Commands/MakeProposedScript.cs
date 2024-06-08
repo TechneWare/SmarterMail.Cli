@@ -52,7 +52,7 @@ namespace SmartMail.Cli.Commands
                     var description = $"{DateTime.UtcNow}| IPs[{grp.BlockedIps.Count}] %Abuse[{grp.PercentAbuse:P}]";
 
                     //Using the Virus Total api, so include the score
-                    if (string.IsNullOrEmpty(Globals.Settings.VirusTotalApiKey))
+                    if (!string.IsNullOrEmpty(Globals.Settings.VirusTotalApiKey))
                         description = $"{DateTime.UtcNow}| IPs[{grp.BlockedIps.Count}] AvgScore[{grp.AvgScore:F3}] %Abuse[{grp.PercentAbuse:P}]";
 
                     if (script.Add($"pb {grp.Subnet} {description}"))  //Perma ban the CIDR with a limited description
@@ -113,7 +113,7 @@ namespace SmartMail.Cli.Commands
                         Log.Warning($"Unable to Locate existing temp block on {tb.Ip}, so skipped it");
                 }
 
-                if (newIpBlocks.Any())
+                if (script.ScriptLines.Any())
                     script.Add("InvalidateCache"); //Since data may have changed, invalidate the cache
                 else
                     script.Add("Print No new IPs to analize at this time");

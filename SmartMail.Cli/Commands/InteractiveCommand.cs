@@ -41,6 +41,7 @@ namespace SmartMail.Cli.Commands
 
         public void Run()
         {
+            Globals.IsInteractiveMode = true;
             var availableCommands = Utils.GetAvailableCommands();
             var parser = new CommandParser(availableCommands);
             parser.ParseCommand(["version"]).Run();

@@ -107,7 +107,7 @@ namespace SmartMail.Cli.Commands
                         Log.Warning($"Unable to find any information for {ipAddress}");
 
                     ResolveProtocol(ipCached);
-                    string description = GetIpDescription(ipInfo);
+                    string description = ipInfo?.GetDescription(protocol) ?? "No description available";
 
                     //Build the script to run the block and set the description
                     var script = new Script(Log, $"DOC {ipAddress}");
@@ -146,32 +146,6 @@ namespace SmartMail.Cli.Commands
                 protocol = ipCached.description.ToLower().Contains("imap") ? "IMAP" : protocol;
                 protocol = ipCached.description.ToLower().Contains("xmpp") ? "XMPP" : protocol;
             }
-        }
-
-        /// <summary>
-        /// Get's the best description possible for the requested IP
-        /// </summary>
-        /// <param name="ipInfo">Virus Total data on this IP</param>
-        /// <returns>The resolved description for the IP</returns>
-        private string GetIpDescription(IPAddressInfo? ipInfo)
-        {
-            string description = "";
-            if (ipInfo != null)
-                //Set the description using the Virus Total data - USing key:value format to allow parsing
-                description = $"TS:{ipInfo.LastQuery} SN:{ipInfo.attributes.network} ASN:{ipInfo.attributes.asn} P:{protocol} CTY:{ipInfo.attributes.country} Score:{ipInfo.attributes.last_analysis_stats.Score:F3}";
-            else
-            {
-                //Otherwise, (we might have overrun the quota at Virus Total) use a limited description that can be used next time Virus Total is working
-                var tempBlock = Cache.TempIpBlocks.Where(i => i.ip == ipAddress).FirstOrDefault();
-                if (tempBlock != null)
-                    //Use the data from the temporary block if its available
-                    description = $"{DateTime.UtcNow} {tempBlock.ipLocation} {tempBlock.ruleDescription}";
-                else
-                    //Otherwise just use a default description
-                    description = $"{DateTime.UtcNow} No Description Available";
-            }
-
-            return description;
         }
     }
 }
