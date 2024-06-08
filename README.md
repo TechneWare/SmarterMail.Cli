@@ -95,21 +95,33 @@ This then grew into the ability to auto-log into the server on launch, Script on
 _The jargon evolved here: IPs on the permanent blocklist are called PermaBlocks, and IPs on the IDS(Temporary list) are called TempBlocks._
 
 1. Clone/Compile/Run the solution
+ 	- If you want to build this on a Raspberry PI
+  		- Make sure you have .net 8 installed.
+    	- A good article can be found here: [Install and use Microsoft Dot NET 8 with the Raspberry Pi](https://www.petecodes.co.uk/install-and-use-microsoft-dot-net-8-with-the-raspberry-pi/)
+  	- Navigate to the root folder where the file `SmartMail.Cli.sln` is found:
+		- For 64bit Arm: `dotnet publish --runtime linux-arm64 --self-contained` 
+		- For 32bit Arm: `dotnet publish --runtime linux-arm --self-contained`
+  			- add `-o [output folder]` to redirect to your desired output folder
+  		- Switch folders to `/bin/Release/net8.0/linux-arm/` or the specified output folder, and execute with `./SmartMail.Cli`
+    		- The process should be similar for other Linux distros; provide the proper runtime `--runtime [runtime for your platform]`.
+      			- I tried using 64bit Arm on a Raspberry PI 4b, but I believe there is a bug with 64bit compiling at this time, so I ended up using the 32bit version.
+         		- See: [.NET RID Catalog](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog) for your particular platform.
 	- At the prompt, type `settings` and press ENTER. Follow the prompts to configure the settings.
-	- If this is the first run, you will need to configure the Smarter Mail Server's address where the API endpoint can be found, e.g., `webmail.example.com`.
-2. Pressing `ENTER` at the prompt will show a list of available commands
+		- If this is the first run, you must configure the Smarter Mail Server's address where the API endpoint can be found, e.g., `webmail.example.com`.
+	
+3. Pressing `ENTER` at the prompt will show a list of available commands
 ```fancy
 Usage: commandName [Arguments]
 Commands:
 
 Clear                             - Clears the screen
-CommitProposed                    - Commits propposed changes from the current cache (loaded with load command)
+CommitProposed                    - Commits proposed changes from the current cache (loaded with load command)
 DeleteBan [IpAddress/CIDR]        - Removes an IP/CIDR from the permanent blocklist
 DeleteTemp [IpAddress]            - Removes an IP from the temporary blocklist
 DMany [number]                    - Documents 1 or more undocumented perma blocked IPs
 Doc [IpAddress protocol noload nosave]- Adds known IP Info to an IPs description in the servers settings>security>black list
-IpInfo [IpAddress]                - Attempts to retreive IP Info from Virus Total for the specified IP Address
-GetPermaBlockIps [show]           - loads permanetly blocked IP addresses to memory
+IpInfo [IpAddress]                - Attempts to retrieve IP Info from Virus Total for the specified IP Address
+GetPermaBlockIps [show]           - loads permanently blocked IP addresses to memory
 GetTempIpBlockCounts              - returns the count of temporary IP blocks by service type
 GetTempBlockIps                   - returns temporarily blocked IP addresses
 Help [commandName]                - Displays help
@@ -124,12 +136,12 @@ Print [message]                   - Prints a message to the output
 Quit                              - Ends the program
 RunScript [FullPathToScript]      - Executes a saved script EG: RunScript C:\temp\myscript.txt or run c:\temp\myscript.txt
 SaveIpInfo                        - Saves Cached IP info from VirusTotal to file ipinfo.json
-PermaBan [IP/CIDR Description]    - Adds or Updates an IP to the permanent black list
+PermaBan [IP/CIDR Description]    - Adds or Updates an IP to the permanent blacklist
 Sched [#Seconds commandToRun]     - Schedules a job to run on an interval until stopped
 Session                           - Displays info about the current session
 Settings                          - Configures settings
 Version                           - Display Version Info
-Wait [milliseconds]               - Waits the specified number of miliseconds
+Wait [milliseconds]               - Waits the specified number of milliseconds
 ```
 
 Most commands have a short version, and you can get those by typing `Help [CommandName]`
@@ -211,11 +223,11 @@ pb 220.174.209.154 6/1/2024 4:53:59 PM Default SMTP Password Brute Force strict 
 load
 ```
 
-6. To execute the script type `run commit_bans.txt`
+6. To execute the script, type `run commit_bans.txt`
 
 
 ### Persisting settings and configuring a startup script
-At the prompt enter `settings` and follow the prompts to modify the settings or edit the config.json file
+At the prompt, enter `settings` and follow the prompts to modify the settings or edit the config.json file
 
 Example config.json:
 ```json
@@ -240,13 +252,13 @@ Example config.json:
 }
 ```
 
-- **VirusTotalApiKey:** (Optional) api key to your free or better Virus Total Account
+- **VirusTotalApiKey:** (Optional) API key to your free or better Virus Total Account
 	- See: [Virus Total](https://www.virustotal.com/)
 	- Virus Total allows more accurate identification of CIDR ranges
-	- Without an api key, IPs are categorized into /24 and /16 networks only
+	- Without an API key, IPs are categorized into /24 and /16 networks only
 - **LoggingLevel:** Valid values (Debug, Info, Warning, Error)
 - **Protocol:** http or https
-	- The http protocol to use when communicating with the Smarter Mail api
+	- The HTTP protocol to use when communicating with the Smarter Mail API
 - **UseAutoTokenRefresh:** true or false
 	- If true, the client will maintain an active connection
 	- If false, the API wrapper (SmartMailApiClient) will refresh the token as needed upon the next request
@@ -286,7 +298,7 @@ public static int vtMinuteQuota { get; set; } = 4;
 public static int vtDailyQuota { get; set; } = 500;
 ```
 
-If you launch with the above script, there may be a period where it's collecting data on all the IPs in your block list from Virus Total. The free account gives you 4 hits/minute and 500 hits/day, so it's possible you may go over this initially. That's okay because a built-in quota tracking system prevents further hits against the API when you're over your quota. This system ensures that your usage is always within the set limits. When the quota period expires, it will continue documenting IPs without any intervention required. Currently its hard coded to use the free account values, but if you modify the Globals.cs file, you can set your own quota limits.
+If you launch with the above script, there may be a period where it's collecting data on all the IPs in your block list from Virus Total. The free account gives you 4 hits/minute and 500 hits/day, so you may go over this initially. That's okay because a built-in quota tracking system prevents further hits against the API when you're over your quota. This system ensures that your usage is always within the set limits. When the quota period expires, it will continue documenting IPs without any intervention required. Currently its hard coded to use the free account values, but if you modify the Globals.cs file, you can set your own quota limits.
 
 Unfortunately, Virus Total does not give free accounts access to the endpoint that gives quota information, and they don't return quota information in the headers. There is also a 15.5k hits/month quota, but I did not implement that. Hopefully, I won't need to. If an API request detects that the quota was reached, it will not allow further hits until the next day. The day quota expires at midnight UTC, and the month quota will be reset at midnight UTC on the 1st of the month.
 
@@ -297,7 +309,7 @@ IP descriptions on the block list are initially set to the basic information ava
 
 Once the IP has been documented, it will have an accurate CIDR block assigned to it and can now be considered by the `make` command for inclusion in the commit_bans.txt script file.
 
-If you examine the logs for POP, IMAP, or SMTP, you can see that it's working.  SMTP is likely the most active.
+If you examine the POP, IMAP, or SMTP logs, you can see that it is working.  SMTP is likely the most active.
 
 Sample SMTP log for a single blocked request:
 ```logos
