@@ -102,6 +102,20 @@ Consider this: what if the IP list looked more like:
 
 You might be tempted to use `80.244.0.0/16` as the CIDR group to block on. So, how many IPs is this? Well, roughly 65,025 possible addresses, which would equate to approximately 0.05% of the IPs found on this subnet being bad actors. You might not feel comfortable blocking this entire address space.
 
+If we can accuratly identify the CIDR range for a given IP, then we can more accuratly judge how abusive a subnet is and scale up how many IP discoveries it takes to issue a block for a given CIDR range. 
+
+For example suppose we choose to block at 0.5% abuse
+- Subnet `Size` * `0.5%` = `Min#Abusive_IPs` to trigger a CIDR block
+
+| CIDR | Size | #IPs to block |
+| :---: | :---: | :---: |
+| /24 | 254 | 2 |
+| /21 | 2046 | 11 |
+| /18 | 16382 | 82 |
+| /16 | 65534 | 328 |
+
+As you can see, this allows the trigger value to scale up with CIDR size.  This is why a Virus Total API key is recommended, as not having that falls back to only using /24 or /16 CIDR ranges.
+
 So, the goal is to identify subnets that are not trusted while not penalizing subnets with only a few bad actors in them and blocking traffic as minimally and optimally as possible. At the same time, automate this as much as possible to get consistent documentation and reduce the amount of manual interaction with the server to maintain the blocklist. Plus, it might be nice to rebuild the blocklist or use the captured data in other systems/firewalls, etc.
 
 ## The SmarterMail.CLI Utility
