@@ -107,7 +107,7 @@ If we can accuratly identify the CIDR range for a given IP, then we can more acc
 For example suppose we choose to block at 0.5% abuse
 - Subnet `Size` * `0.5%` = `Min#Abusive_IPs` to trigger a CIDR block
 
-| CIDR | Size | #IPs to block |
+| CIDR | Size | #IPs |
 | :---: | :---: | :---: |
 | /24 | 254 | 2 |
 | /21 | 2046 | 11 |
