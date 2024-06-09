@@ -5,7 +5,8 @@ This is a solution with two projects
 - A REST client for the Smarter Mail Server API
 - A simple command line utility to manage an IP Black List on a SmarterMail server using the server's API
 
-Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the block list. However, I created this initial version to solve my use case: automated blocklist management.
+Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the blocklist. However, I created this initial version to solve my use case: automated blocklist management.
+
 The command line utility grew into something that can be extended to perform any action against a Smarter Mail server. 
 
 With features such as:
@@ -24,17 +25,36 @@ The original use case was to:
 
 ### Moving incoming IDS blocks to the blocklist
 This is done as one might expect, by first:
-- Configuring the server's IDS rules to identify bad actor IP addresses is found under Settings > Security > IDS Rules.
-	- _As I host a small footprint server with only my accounts and a few friends and family using it, I have opted for some pretty strict rules. Depending on your user's needs, your rules may need to be less restrictive._
-	- You can use a few of the IDS rules to act as honey pots and more quickly trap bad actor IP addresses as follows:
-		- Since I have no POP users, I opted to:
-			- Leave the POP ports open on the firewall and
-			- Set the Denial of Service POP rule to flag any IP that attempts to use it once, with a long block time.
-		- Since I know that all my users have valid passwords that currently work
-			- Set the SMTP and IMAP Password Brute Force rule to block after one failed attempt, with a long block time.
-			- Set the SMTP harvesting rule to block after 1 bad session, but with a shorter block time, which is not shorter than the automation waits between executions.
-	- Even if you don't configure stringent rules because many users will forget their passwords, eventually, you will find you have an extensive list of IPs either showing up and falling off the IDS list after some time or that you have manually moved to the permanent blocklist.
+- Configuring the server's IDS rules to identify bad actor IP addresses: 
+	- found on the server under `Settings > Security > IDS Rules`.
 - Then, remove each IDS block and add/document it in the permanent blocklist.
+
+### Notes on Server Config
+You must configure the server's IDS rules in order to flag incoming IPs as abusive. See: 
+- [SmarterMail IDS Rules](https://help.smartertools.com/smartermail/current/topics/systemadmin/security/advanced/abusedetection)
+- [SmarterMail IDS Blocks](https://help.smartertools.com/smartermail/current/topics/systemadmin/manage/currentblocks)
+
+_**Note:** As I host a small footprint server with only my accounts and a few friends and family using it, I have opted for some pretty strict rules. Depending on your user's needs, your rules may need to be less restrictive. This is just how I configured my IDS rules._
+
+**Using IDS Rules as a honey pot:**
+- You can use a few of the IDS rules to act as honey pots and more quickly trap bad actor IP addresses as follows:
+	- Since I have no POP users, I opted to:
+		- Leave the POP ports open on the firewall and
+		- Set the Denial of Service POP rule to flag any IP that attempts to use it once, with a long block time.
+	- Since I know that all my users have valid passwords that currently work, and they will talk to me directly if there is an issue, I opted to:
+		- Set the SMTP and IMAP Password Brute Force rules to block after one failed attempt, with a long block time.
+		- Set the SMTP harvesting rule to block after 1 bad session, but with a shorter block time, which is not shorter than the automation waits between executions.
+	
+### Is this for me?
+Even if you don't configure stringent rules because many users will forget their passwords, eventually, you will find you have an extensive list of IPs either showing up and falling off the IDS list after some time or that you have manually moved to the permanent blocklist.
+
+- If you find that you don't want/have time to constantly monitor the IDS blocks and move them to the permanent blocklist.
+- Or you would just like to optimize your block list.
+- Or you are interested in a foundational starting point to access other parts of the Smarter Mail API using your own code.
+	- See API documentation from the server at:
+		- `Settings > API Documentation`
+		- Or `https://[your servers web address]/Documentation/api#/topics/overview`
+- Then this utility/project may be for you.
 
 ### Blocklist optimization
 Optimizing the blocklist is done by examining all the known bad actor IPs to see if any of them can be grouped into a subnet or CIDR group. Identifying these CIDR groups allows for replacing many IP address entries with a single entry covering an entire subnet. Consider the number of bad actor IPs found for a given subnet. We can make a judgment call as to the reputation of the subnet and thus choose when to implement a CIDR block that will encompass additional IP addresses.
@@ -67,9 +87,10 @@ It is easy to see the pattern here. The subnet `80.244.11.0/24` appears to be 
 By entering IPs such as `80.244.11.0/24` into your blocklist, you can effectively block all the IPs on the `80.244.11.x` subnet with a single entry. We can feel pretty comfortable doing this, as 36 out of 254 IPs, or about 14.2% of the IPs on this subnet, have been found to be bad actors. Thus, this subnet could be considered to have a bad reputation and deserves a CIDR entry on the blocklist, shortening the list by 35 entries.
 
 The `/24` represents the number of bits used in the subnet mask and, thus, the portion of the IP address that contains the subnet. In this case, `255.255.255.0` or `11111111 11111111 11111111 00000000` in binary. Therefore, we can see that the size of this subnet is the number of IP addresses that can fill out the last segment of the address. In this case, 256(0->255), minus 1 for the broadcast address(255), and minus 1 for the 0 address(Legacy broadcast/modern ignore), which leaves you with 254 useable addresses on the subnet.
+
 However, it can get more complicated since /24 might not accurately describe the 80.244.11.0 subnet.
 
-Consider this: what if the IP list looked more like this:
+Consider this: what if the IP list looked more like:
 ```logos
 80.244.9.65
 80.244.10.118
