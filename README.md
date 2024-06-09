@@ -207,10 +207,11 @@ Most commands have a short version, and you can get those by typing `Help [Comm
 	[6/6/2024 12:58:23 AM UTC]Info      : Proposed: Create 0 new Perma blocks
 	[6/6/2024 12:58:23 AM UTC]Info      : -------------------------------
 ```
-This output shows that there are currently no IDS blocks (Temp Blocked IPs), 888 Perma Blocked IPs, and 4 CIDR groups on the blocklist.
+This output shows that there are currently no IDS blocks (Temp Blocked IPs), There are currently 888 Perma Blocks, of which 884 are IP addresses and 4 are CIDR groups, on the server's blocklist.
 
 5. Type `Make` to generate the script that would implement the proposed blocking actions
 	- You should see something like `Script saved to file: [path of executable]/commit_bans.txt`
+
 Example Script:
 ```logos
 # AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [6/1/2024 4:53:59 PM UTC]
@@ -246,7 +247,6 @@ load
 ```
 
 6. To execute the script, type `run commit_bans.txt`
-
 
 ### Persisting settings and configuring a startup script
 At the prompt, enter `settings` and follow the prompts to modify the settings or edit the config.json file
