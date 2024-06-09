@@ -100,7 +100,7 @@ Consider this: what if the IP list looked more like:
 80.244.14.244
 ```
 
-You might be tempted to use `80.244.0.0/16` as the CIDR group to block on. So, how many IPs is this? Well, roughly 65,025 possible addresses, which would equate to approximately 0.05% of the IPs found on this subnet being bad actors. You might not feel comfortable blocking this entire address space.
+You might be tempted to use `80.244.0.0/16` as the CIDR group to block on. So, how many IPs is this? Well, roughly 65,534 possible addresses, which would equate to approximately 0.05% of the IPs found on this subnet being bad actors. You might not feel comfortable blocking this entire address space, even if you found 36 abusive IPs coming from this subnet.
 
 If we can accuratly identify the CIDR range for a given IP, then we can more accuratly judge how abusive a subnet is and scale up how many IP discoveries it takes to issue a block for a given CIDR range. 
 
