@@ -478,8 +478,8 @@ _Refresh token tracking starts upon successful login_
 
 ### MakeScript
 
-| Command Alias | Params | Comments |
-| :--- | :--- | :--- |
+| Command Alias | Comments |
+| :--- | :--- |
 | `MakeScript` `make` | Makes a commit script out of the proposed bans to be executed later |
 
 _Script is saved to the file `commit_bans.txt` in the directory of the executable_
