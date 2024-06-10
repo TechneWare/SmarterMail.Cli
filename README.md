@@ -452,7 +452,7 @@ Example:
 - `ignore 127.0.0.0/24 Some Description` will ignore all IPs in the 127.0.0.x network.
 - `ignore list` will display the current ignore list
 
-_This command can be useful if you have a device or subnet that you know you never want to block but that can occasionally fall into an IDS block. You could also use the server's white-list to do this.  IPs/CIDRs in this list will be automatically removed when generating the blacking script with `make`._
+_This command can be useful if you have a device or subnet that you know you never want to block but that can occasionally fall into an IDS block. You could also use the server's white-list to do this.  IPs/CIDRs in this list will be automatically removed when generating the blocking script with `make`._
 
 ### Interactive
 
