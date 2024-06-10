@@ -439,6 +439,21 @@ _If `show` is included, will also display the loaded data_
 | :--- | :--- | :--- |
 | `Help` `h` | commandName | Displays help on the specified command |
 
+### Ignore
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| Ignore | IP/CIDR or List | Toggles the Ignore status of an IP or CIDR address |
+
+_Maintains a list in `ipIgnore.json`, these IPs will be removed from the server's blacklist if discovered_
+
+Example: 
+- `ignore 127.0.0.1 Some Description` will add this IP, with a description, to the Ignore list. Issuing this command a second time will remove it from the ignore list.
+- `ignore 127.0.0.0/24 Some Description` will ignore all IPs in the 127.0.0.x network.
+- `ignore list` will display the current ignore list
+
+_This command can be useful if you have a device or subnet that you know you never want to block but that can occasionally fall into an IDS block. You could also use the server's white-list to do this.  IPs/CIDRs in this list will be automatically removed when generating the blacking script with `make`._
+
 ### Interactive
 
 | Command Alias | Params | Comments |
@@ -573,6 +588,15 @@ _This displays information about the currently logged on user_
 | `Settings` `set` | Configures settings |
 
 _Settings are saved to `config.json`_
+
+### UpdateBlacklist
+
+| Command Alias | Comments |
+| :--- | :--- |
+| `UpdateBlacklist` | Builds a blocking script and executes it in one step |
+
+_This is equivelent to running: `Make` followed by `run commit_bans.txt`_
+_If you would rather examine the script before execution, then run `make` by itself first._
 
 ### Version
 

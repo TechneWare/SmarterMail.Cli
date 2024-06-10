@@ -9,7 +9,7 @@ namespace SmartMail.Cli.Commands
     /// <summary>
     /// Displays usage of a specific command
     /// </summary>
-    public class HelpCommand : ICommand, ICommandFactory
+    public class HelpCommand : CommandBase, ICommand, ICommandFactory
     {
         private readonly string[] args;
 
@@ -24,11 +24,13 @@ namespace SmartMail.Cli.Commands
         public string ExtendedDescription => "Specify a command name to get help on that command: EG: Help [CommandName]";
 
         public HelpCommand()
+            :base(Globals.Logger)
         {
             args = [];
         }
 
         public HelpCommand(string[] args)
+            : base(Globals.Logger)
         {
             //Save all args that do not point at this command
             this.args = args.Skip(1).ToArray();
