@@ -788,7 +788,7 @@ When building a new command, we must set the following properties:
 - Inherit from the base class and interfaces
     - `public class PrintCommand : CommandBase, ICommand, ICommandFactory`
 - Provide default values for the CommandName, CommandArgs, CommandAlternates, and any Description/Extended Description
-    - `public string CommandName => "Print";` sets the full name of the description
+    - `public string CommandName => "Print";` sets the full name of the command
     - `public string CommandArgs => "message";` lists the arguments that can be used with the command
     - `public string[] CommandAlternates => [];` an array of strings that represents alternates for this command
         - EG: `["pt","?"]` could be used to alias the print command to `pt` and `?`.
