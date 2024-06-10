@@ -137,7 +137,7 @@ _The jargon evolved here: IPs on the permanent blocklist are called PermaBlocks,
 		- For 64bit Arm: `dotnet publish --runtime linux-arm64 --self-contained` 
 		- For 32bit Arm: `dotnet publish --runtime linux-arm --self-contained`
   			- add `-o [output folder]` to redirect to your desired output folder
-      		- I tried using 64bit Arm on a Raspberry PI 4b, but I believe there is a bug with 64bit compiling at this time, so I ended up using the 32bit version. It could also be that my Raspberry PI has had its OS upgraded in place serveral times, and so, even though the OS reports as being 64bit, it only wants to work with 32bit compiled ARM.  Try both ways if your currious.
+      		I tried using 64bit Arm on a Raspberry PI 4b, but I believe there is a bug with 64bit compiling at this time, so I ended up using the 32bit version. It could also be that my Raspberry PI has had its OS upgraded in-place several times, and so, even though the OS reports as 64bit, it only wants to work with 32bit compiled ARM. Try both ways if you're curious.
   		- Switch folders to `/bin/Release/net8.0/linux-arm/` or the specified output folder, and execute with `./SmartMail.Cli`
     		- The process should be similar for other Linux distros; provide the proper runtime `--runtime [runtime for your platform]`.
          		- See: [.NET RID Catalog](https://learn.microsoft.com/en-us/dotnet/core/rid-catalog) for your particular platform.
@@ -366,13 +366,13 @@ Unless otherwise noted, all commands can be used in a script, in interactive mod
 
 | Command Aliases | Comments|
 | :--- | :--- |
-| `clear` `cls` | Clears the screen, can be used from command line, but mostly used for interactive mode.|
+| `clear` `cls` | Clears the screen, can be used from the command line, but is mostly used for interactive mode.|
 
 ### CommitProposed
 
 | Command Alias | Comments |
 | :--- | :--- |
-| `CommitProposed` `cp` | Commits propposed changes from the current cache (loaded with load command). Cleans up the IDs blocks and condenses all perma blocks into CIDR ranges where possible. |
+| `CommitProposed` `cp` | Commits proposed changes from the current cache (loaded with load command). Cleans up the IDS blocks and condenses all perma blocks into CIDR ranges where possible. |
 
 _Note: This command does not use the script engine, it will immediatly execute the plan stored in memory. It is recommended to use the Make/Run commands instead_
 
@@ -405,8 +405,9 @@ _For free accounts, it is recommended not to use more then `4` for the `number` 
 
 - **IpAddress:** An IP address that is currently listed in the block list the server under settings>security>black list
 - **protocol:** The protocol that was used when the IP was banned. EG: SMTP, POP, IMAP
-- **noload:** Prevents reloading of the cache after execution. Useful in scripts where many doc command are issued.  Issue a `load` command to reload the cache later.
-- **nosave:** Prevents saving of Virus Total data to the IpInfo.json file after execution. Useful in scripts where many doc command are issued.  Issue a `SaveIpInfo` command to reload the cache later.
+- **noload:** Prevents the cache from reloading after execution. This is useful in scripts where many doc commands are issued.  Issue a `load` command to reload the cache later.
+- **nosave:** Prevents saving of Virus Total data to the IpInfo.json file after execution. This is useful in scripts where many doc commands are issued.
+	- Issue a `SaveIpInfo` command to reload the cache later.
 
 ### IpInfo
 
@@ -473,7 +474,7 @@ _Used to interact with a user_
 | :--- | :--- |
 | `InvalidateCache` | Invalidates the current cache, signaling other commands to reload it |
 
-_Used in scripts to make sure the cache appears invalid for follow on commands_
+_Used in scripts to make sure the cache appears invalid for follow-on commands_
 
 ### Kill
 
@@ -498,13 +499,13 @@ _See: `Sched` to schedule a job_
 | :--- | :--- |
 | `LoadBlockedIpData` `load` | Loads all sources of blocked IP data into memory and generates a blocking plan |
 
-_Data is anyalized with find subnets to identify groups of malicious IPs_
+_This data is analyzed to find subnets when identifying groups of malicious IPs_
 
 ### Login
 
 | Command Alias | Params | Comments |
 | :--- | :--- | :--- |
-| `Login` | Username Password | Logs into the API, retreiving auth tokens for the current session |
+| `Login` | Username Password | Logs into the API, retrieving auth tokens for the current session |
 
 _Refresh token tracking starts upon successful login_
 
@@ -568,11 +569,11 @@ _**Note:** After a restore, `make` may want to re-create CIDR blocks and remove 
 | `loglevel` | `debug` `info` `warning` `error` | Sets the current logging level to the specified value |
 | `progress` | `on` `off` | if on, will display a progress indicator while scripts are running |
 
-Exampe:
-`setoption loglevel debug` will switch to showing output of debug level or higher
-`setoption progress on` will show the progress indicator when a script is running
+Example:
+- `setoption loglevel debug` will switch to showing command output of debug level or higher
+- `setoption progress on` will show the progress indicator when a script is running
 
-These two options together can be used to suppress output while a script is running and instead display `Action....` style messages as the script progresses instead.
+These two options can be used together to suppress output while a script is running and instead display `Action....` style messages as the script progresses.
 Example script:
 ```
 setoption loglevel warning
@@ -608,7 +609,7 @@ _**Note:** This command requires the program to run in interactive mode.  If run
 | :--- | :--- |
 | `Session` | Displays info about the current session |
 
-_This displays information about the currently logged on user_
+_This displays information about the currently logged-on user_
 
 ### Settings
 
@@ -624,7 +625,7 @@ _Settings are saved to `config.json`_
 | :--- | :--- |
 | `UpdateBlacklist` | Builds a blocking script and executes it in one step |
 
-_This is equivelent to running: `Make` followed by `run commit_bans.txt`_
+_This is equivalent to running: `Make` followed by `run commit_bans.txt`_
 _If you would rather examine the script before execution, then run `make` by itself first._
 
 ### Version
