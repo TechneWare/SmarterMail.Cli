@@ -151,8 +151,8 @@ Commands:
 
 Clear                             - Clears the screen
 CommitProposed                    - Commits proposed changes from the current cache (loaded with load command)
-DeleteBan [IpAddress/CIDR]        - Removes an IP/CIDR from the permanent blocklist
-DeleteTemp [IpAddress]            - Removes an IP from the temporary blocklist
+DeleteBan [IpAddress/CIDR]        - Removes an IP/CIDR from the permanent blacklist
+DeleteTemp [IpAddress]            - Removes an IP from the temporary block list
 DMany [number]                    - Documents 1 or more undocumented perma blocked IPs
 Doc [IpAddress protocol noload nosave]- Adds known IP Info to an IPs description in the servers settings>security>black list
 IpInfo [IpAddress]                - Attempts to retrieve IP Info from Virus Total for the specified IP Address
@@ -160,6 +160,7 @@ GetPermaBlockIps [show]           - loads permanently blocked IP addresses to me
 GetTempIpBlockCounts              - returns the count of temporary IP blocks by service type
 GetTempBlockIps                   - returns temporarily blocked IP addresses
 Help [commandName]                - Displays help
+Ignore [Ip/CIDR Description]      - Toggles the Ignore status of an IP or CIDR address
 Interactive                       - Launches the interactive shell
 InvalidateCache                   - Invalidates the current cache, signaling other commands to reload it
 Kill [JobId]                      - Kills the job with Id = JobId
@@ -169,13 +170,15 @@ Login [UserName Password]         - Logs into the API
 MakeScript                        - Makes a commit script out of the proposed bans to be executed later
 Print [message]                   - Prints a message to the output
 Quit                              - Ends the program
-Restore [IpFragment | *]          - Restores the black list from previously stored data.
+Restore [IpFragment | * force]    - Restores the black list from previously stored data.
 RunScript [FullPathToScript]      - Executes a saved script EG: RunScript C:\temp\myscript.txt or run c:\temp\myscript.txt
 SaveIpInfo                        - Saves Cached IP info from VirusTotal to file ipinfo.json
-PermaBan [IP/CIDR Description]    - Adds or Updates an IP to the permanent blacklist
+PermaBan [IP/CIDR Description]    - Adds or Updates an IP to the permanent black list
 Sched [#Seconds commandToRun]     - Schedules a job to run on an interval until stopped
 Session                           - Displays info about the current session
+SetOption [option value]          - Sets a system option to the specified value
 Settings                          - Configures settings
+UpdateBlacklist                   - Builds a blocking script and executes it in one step
 Version                           - Display Version Info
 Wait [milliseconds]               - Waits the specified number of milliseconds
 ```
@@ -538,6 +541,7 @@ _Searches the IP history data (IpInfo.json) for IPs that start with IpFragment o
 For Example: 
 - _`Restore *` will restore all IPs and remove all CIDR subnets_
 - _`Restore 192.168.1` will restore all IPs that start with 192.168.1 and remove any CIDR groups that match on 192.168.1_
+- _`Restore 192.168.1.0/24` will restore all known IPs in the 192.168.1.x subnet and remove any CIDR groups that either match or are contained by 192.168.1.0/24_
 
 _**Note:** After a restore, `make` may want to re-create CIDR blocks and remove IPs from the block list, depending on how your settings are configured_
 
@@ -552,6 +556,31 @@ _**Note:** After a restore, `make` may want to re-create CIDR blocks and remove 
 | Command Alias | Params | Comments |
 | :--- | :--- | :--- |
 | `SaveIpInfo` | Saves Cached IP info from Virus Total to file `ipinfo.json` |
+
+### SetOption
+
+| Command Alias | Params | Comments |
+| :--- | :--- | :--- |
+| `SetOption` | option value | Sets a system option to the specified value |
+
+| Option | Values | Description |
+| :--- | :--- | :--- |
+| `loglevel` | `debug` `info` `warning` `error` | Sets the current logging level to the specified value |
+| `progress` | `on` `off` | if on, will display a progress indicator while scripts are running |
+
+Exampe:
+`setoption loglevel debug` will switch to showing output of debug level or higher
+`setoption progress on` will show the progress indicator when a script is running
+
+These two options together can be used to suppress output while a script is running and instead display `Action....` style messages as the script progresses instead.
+Example script:
+```
+setoption loglevel warning
+setoption progress on
+# do stuff here
+setoption loglevel Info
+setoption progress off
+```
 
 ### PermaBan
 

@@ -21,7 +21,7 @@ namespace SmartMail.Cli.Commands
 
         public string Description => "Sets a system option to the specified value";
 
-        public string ExtendedDescription => "EG: set loglevel debug, set progress on";
+        public string ExtendedDescription => "EG: setoption loglevel debug, setoption progress on";
 
         public SetCommand()
             : base(Globals.Logger)

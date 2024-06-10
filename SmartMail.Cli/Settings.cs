@@ -14,7 +14,7 @@ namespace SmartMail.Cli
         public HttpProtocol Protocol { get; set; } = HttpProtocol.https;
         public string ServerAddress { get; set; } = "[server domain/IP address]";
         public bool UseAutoTokenRefresh { get; set; } = true;
-        public double PercentAbuseTrigger { get; set; } = .001;
+        public double PercentAbuseTrigger { get; set; } = .005;
         public bool UseAutoLogin { get; set; } = false;
         public string AutoLoginUsername { get; set; } = "[user name]";
         public string AutoLoginPassword { get; set; } = "[password]";
