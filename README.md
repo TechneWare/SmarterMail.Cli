@@ -741,7 +741,7 @@ response = new LoginResponse()
 This same basic pattern can be used to implement as many of the API endpoints as you would like.
 
 # Extending the CLI
-While adding new commands to the API may not be quite as straightforward as adding endpoints, the process is fairly simple. The more complex part is figuring out how those commands should interact with the internals of the CLI utility.
+While adding new commands to the CLI may not be quite as straightforward as adding endpoints to the API, the process is fairly simple. The more complex part is figuring out how those commands should interact with the internals of the CLI utility.
 
 Every command inherits from `CommandBase`, `ICommand`, and `ICommandFactory`
 
@@ -815,7 +815,7 @@ public ICommand MakeCommand(string[] args)
 - Since args should always have at least one element, the command name itself, then we can return the basic command if 1 or fewer arguments are passed: 
 ```csharp
 if (args.Length <= 1)
-return new PrintCommand();
+    return new PrintCommand();
 ```
 - In every other case, there are 2 or more args, so we treat the rest as the message to use for this command and use the second constructor to configure it
 ```csharp
