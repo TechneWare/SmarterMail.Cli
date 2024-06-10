@@ -1,4 +1,5 @@
-﻿using SmartMail.Cli.Models;
+﻿using NetTools;
+using SmartMail.Cli.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,14 +49,23 @@ namespace SmartMail.Cli.Commands
             try
             {
                 Log.Debug("Setting up CIDR groups");
+                var ignoredCIDRs = Cache.IgnoredIps
+                    .Where(i => i.IsSubnet)
+                    .Select(i => IPAddressRange.Parse(i.Ip))
+                    .ToList();
 
-                var permaBansToRemove = Cache.ProposedIpGroups.SelectMany(g => g.BlockedIps).Where(i => !i.IsTemporary).Count();
+                var permaBansToRemove = Cache.ProposedIpGroups
+                    .Where(g => !ignoredCIDRs.Contains(g.IpRange))
+                    .SelectMany(g => g.BlockedIps)
+                    .Where(i => !i.IsTemporary)
+                    .Count();
+
                 var allTempBlocks = Cache.TempIpBlocks;
-               
-                if (Cache.ProposedIpGroups.Any())
-                    script.Add($"print === Making {Cache.ProposedIpGroups.Count} CIDR Groups and removing {permaBansToRemove} perma bans");
-                
-                foreach (var grp in Cache.ProposedIpGroups)
+
+                if (Cache.ProposedIpGroups.Where(g => !ignoredCIDRs.Contains(g.IpRange)).Any())
+                    script.Add($"print === Making {Cache.ProposedIpGroups.Where(g => !ignoredCIDRs.Contains(g.IpRange)).Count()} CIDR Groups and removing {permaBansToRemove} perma bans");
+
+                foreach (var grp in Cache.ProposedIpGroups.Where(g => !ignoredCIDRs.Contains(g.IpRange)))
                 {
                     //Create the new group, assume not using Virus Total api (No Score Avaialable)
                     var description = $"{DateTime.UtcNow}| IPs[{grp.BlockedIps.Count}] %Abuse[{grp.PercentAbuse:P}]";
@@ -125,10 +135,44 @@ namespace SmartMail.Cli.Commands
                         Log.Warning($"Unable to Locate existing temp block on {tb.Ip}, so skipped it");
                 }
 
+                var existingIgnoredCIDRs = Cache.BlockedIpGroups
+                    .Where(g => ignoredCIDRs.Contains(g.IpRange))
+                    .ToList();
+
+                if (existingIgnoredCIDRs.Any())
+                    script.Add($"print === Restoring {existingIgnoredCIDRs.Count} Ignored CIDRs");
+
+                foreach (var g in existingIgnoredCIDRs)
+                    script.Add($"restore {g.Subnet} force");
+
+                var ignoredIPs = Cache.AllBlockedIps
+                    .Where(b => Cache.IgnoredIps.Any(i => i.Ip == b.Ip && !i.IsSubnet))
+                    .ToList();
+
+                var ignoredViaCIDR = Cache.AllBlockedIps
+                    .Where(i => ignoredCIDRs.Any(c => c.Contains(System.Net.IPAddress.Parse(i.Ip))))
+                    .ToList();
+
+                ignoredIPs.AddRange(ignoredViaCIDR);
+
+                if (ignoredIPs.Any())
+                    script.Add($"print === Removing {ignoredIPs.Count} Ignored IPs");
+
+                foreach (var i in ignoredIPs)
+                {
+                    script.Add($"Print Removing Ignored IP: {i.Ip}");
+                    if (i.IsTemporary)
+                        script.Add($"dt {i.Ip}");
+                    else
+                        script.Add($"DeleteBan {i.Ip}");
+                }
+
                 string[] scriptHead = [
                         $"# AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [{DateTime.UtcNow} UTC]",
-                        $"# Will Create {Cache.ProposedIpGroups.Count} CIDR groups and remove {permaBansToRemove} perma bans",
+                        $"# Will Create {Cache.ProposedIpGroups.Where(g => !ignoredCIDRs.Contains(g.IpRange)).Count()} CIDR groups and remove {permaBansToRemove} perma bans",
                         $"# Will Move {newIpBlocks.Count} Temporary IDS blocks to the blacklist",
+                        $"# Will Restore {existingIgnoredCIDRs.Count} Ignored CIDR groups",
+                        $"# Will Remove {ignoredIPs.Count} Ignored IPs",
                         $"# =============================================================================",
                         $"setoption loglevel warning",
                         $"setoption progress on"

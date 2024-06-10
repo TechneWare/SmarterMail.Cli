@@ -15,10 +15,11 @@ namespace SmartMail.Cli.Commands
     public class RestoreCommand : CommandBase, ICommand, ICommandFactory
     {
         private readonly string ipStartsWithString;
+        private readonly bool force;
 
         public string CommandName => "Restore";
 
-        public string CommandArgs => "IpFragment | *";
+        public string CommandArgs => "IpFragment | * force";
 
         public string[] CommandAlternates => [];
 
@@ -33,19 +34,24 @@ namespace SmartMail.Cli.Commands
             ipStartsWithString = string.Empty;
         }
 
-        public RestoreCommand(string ipStartsWithString)
+        public RestoreCommand(string ipStartsWithString, bool force)
             : base(Globals.Logger)
         {
             IsThreadSafe = false;
             this.ipStartsWithString = ipStartsWithString;
+            this.force = force;
         }
 
         public ICommand MakeCommand(string[] args)
         {
             if (args.Length <= 1)
                 return new RestoreCommand();
+            else if (args.Length == 2)
+                return new RestoreCommand(args[1], false);
+            else if (args.Length == 3 && args[2].ToLower() == "force")
+                return new RestoreCommand(args[1], true);
             else
-                return new RestoreCommand(args[1]);
+                return new BadCommand($"Unable to understand: {string.Join(" ", args)}");
         }
 
         public void Run()
@@ -80,15 +86,26 @@ namespace SmartMail.Cli.Commands
                     .Where(i => i.id.StartsWith(ipStartsWithString))
                     .ToList();
 
-
-            var cidrEntries = Cache.BlockedIpGroups;
             var existingIps = Cache.PermaIpBlocks
                 .Where(i => !i.IsSubnet)
                 .Select(i => i.ip)
                 .ToList();
 
+            //Remove entries for the CIDR groups that match
+            if (!isSelectAll)
+                ipGroups = Cache.BlockedIpGroups
+                    .Where(g => g.Subnet.StartsWith(ipStartsWithString))
+                    .ToList();
+
             //find all Virus Total data where the IP is not already in the block list
-            var ipsToRestore = ipInfoes.Where(i => !existingIps.Contains(i.id)).ToList();
+            var cidrIps = Cache.IPAddressInfos
+                .Where(i => ipGroups.Any(g => i.id.StartsWith(g.SubnetBase)))
+                .ToList();
+
+            var ipsToRestore = ipInfoes
+                .Where(i => !existingIps.Contains(i.id))
+                .ToList();
+            ipsToRestore.AddRange(cidrIps);
 
             var restoreScript = new Script(Log, "RestoreIpInfoes");
 
@@ -102,20 +119,14 @@ namespace SmartMail.Cli.Commands
                     Log.Warning($"Unable to restore: {ip.id}");
             }
 
-            //Remove entries for the CIDR groups that match
-            if (!isSelectAll)
-                ipGroups = Cache.BlockedIpGroups
-                    .Where(g => g.Subnet.StartsWith(ipStartsWithString))
-                    .ToList();
-
             foreach (var grp in ipGroups)
             {
                 Log.Info($"Removing CIDR: {grp.Subnet}");
                 restoreScript.Add($"db {grp.Subnet}");
             }
 
-            var okToRun = !Globals.IsInteractiveMode;
-            if (Globals.IsInteractiveMode)
+            var okToRun = !Globals.IsInteractiveMode || force;
+            if (!okToRun)
             {
                 if (restoreScript.ScriptLines.Any())
                 {

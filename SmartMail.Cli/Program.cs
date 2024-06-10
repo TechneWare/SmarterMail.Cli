@@ -24,6 +24,9 @@ internal class Program
             //Initilize from ipinfo.json - contains all api responses from Virus Total's api
             //Used to document each IP address and potentially rebuild the primary black list
             Cache.LoadIpInfoes();
+
+            //Initilize from ipIgnore.json - contains all IPs that should be kept off the blacklist
+            Cache.LoadIgnoreIps();
         }
         catch (Exception ex)
         {

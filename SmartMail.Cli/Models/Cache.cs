@@ -50,6 +50,10 @@ namespace SmartMail.Cli.Models
         /// </summary>
         public static List<BlockedIp> AllBlockedIps { get; set; } = [];
         /// <summary>
+        /// IPs that the system should keep out of the server's IDS and blacklist
+        /// </summary>
+        public static List<IgnoredIp> IgnoredIps { get; set; } = [];
+        /// <summary>
         /// Holds a list of CIDR groups that currently exist
         /// </summary>
         public static List<BlockedIpGroup> BlockedIpGroups { get; set; } = [];
@@ -124,6 +128,59 @@ namespace SmartMail.Cli.Models
                 BuildProposedIpGroups();
             }
         }
+        public static void LoadIgnoreIps()
+        {
+            try
+            {
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                if (File.Exists($"{path}/ipIgnore.json"))
+                {
+                    var ignores = File.ReadAllText($"{path}/ipIgnore.json");
+                    IgnoredIps = JsonConvert.DeserializeObject<List<IgnoredIp>>(ignores) ?? [];
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error Loading ipIgnore.json Info: {ex.Message}");
+            }
+        }
+        public static void SaveIgnoreIps()
+        {
+            try
+            {
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var ignores = JsonConvert.SerializeObject(IgnoredIps, Formatting.Indented);
+                File.WriteAllText($"{path}/ipIgnore.json", ignores);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error Saving ipIgnore.json: {ex.Message}");
+            }
+        }
+        public static void IgnoreIp(string ipAddress, string description)
+        {
+            IgnoredIp? ignoredIp = IgnoredIps.SingleOrDefault(i => i.Ip == ipAddress);
+            if (ignoredIp == null)
+            {
+                ignoredIp = new IgnoredIp()
+                {
+                    Ip = ipAddress,
+                    Description = description,
+                    LastUpdated = DateTime.UtcNow
+                };
+
+                IgnoredIps.Add(ignoredIp);
+                Globals.Logger.Info($"{ignoredIp.Ip} added to ignore list");
+            }
+            else
+            {
+                IgnoredIps.Remove(ignoredIp);
+                Globals.Logger.Info($"{ignoredIp.Ip} removed from the ignore list");
+            }
+
+            SaveIgnoreIps();
+        }
+
         /// <summary>
         /// Requests IP info from cache or from Virus Total, saving it to disk and updating the cache
         /// </summary>
@@ -161,14 +218,14 @@ namespace SmartMail.Cli.Models
         {
             try
             {
-                var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 var infoes = JsonConvert.SerializeObject(IPAddressInfos, Formatting.Indented);
                 File.WriteAllText($"{path}/ipinfo.json", infoes);
 
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error Saving IP Info: {ex.Message}");
+                throw new Exception($"Error Saving ipinfo.json: {ex.Message}");
             }
         }
         /// <summary>
@@ -188,7 +245,7 @@ namespace SmartMail.Cli.Models
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error Loading IP Info: {ex.Message}");
+                throw new Exception($"Error Loading ipinfo.json : {ex.Message}");
             }
         }
         /// <summary>
@@ -260,7 +317,7 @@ namespace SmartMail.Cli.Models
             //The goal here is to scale up the minimum count of of abusive IPs found by the size of the CIDR range
             //before allowing a CIDR block to be generated on the server.
             //So CIDR/24 requires 3 IPs and CIDR/16 requires 651 IPs found before a block is generated
-            
+
             Cache.ProposedIpGroups.AddRange(proposedGroups);
         }
         /// <summary>
