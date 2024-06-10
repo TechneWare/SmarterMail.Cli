@@ -730,7 +730,6 @@ Here, we can see the basic pattern for an API method:
 - Convert the response into the IReponse object
 	- `var response = JsonConvert.DeserializeObject<LoginResponse>(result.data);`
 - If the response was not successful, then populate the error data
-	- 
 ```
 response = new LoginResponse()
 {
