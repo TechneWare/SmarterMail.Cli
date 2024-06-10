@@ -25,11 +25,15 @@ namespace SmartMail.Cli.Commands
         public string ExtendedDescription => "Contains blocked protocol flags";
 
         public GetPermaBlockedIpsCommand()
-            : base(Globals.Logger) { }
+            : base(Globals.Logger)
+        {
+            IsThreadSafe = false;
+        }
 
         public GetPermaBlockedIpsCommand(string[] args)
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             showOutput = false;
             if (args.Length >= 2 && args[1].ToLower() == "show")
                 showOutput = true;
@@ -47,7 +51,7 @@ namespace SmartMail.Cli.Commands
         {
             if (IsConnectionOk(Globals.ApiClient))
             {
-                Log.Info("Loading Perma Blocked IPs");
+                Log.Debug("--- Get Perma Blocked IPs ---");
                 var r = Globals.ApiClient?.GetPermaBlockedIPs().ConfigureAwait(false).GetAwaiter().GetResult();
 
                 if (IsResponseOk(r))
@@ -67,6 +71,8 @@ namespace SmartMail.Cli.Commands
                         Log.Info("");
                     }
                 }
+
+                Log.Debug("--- Get Perma Blocked IPs Done ---");
             }
         }
     }

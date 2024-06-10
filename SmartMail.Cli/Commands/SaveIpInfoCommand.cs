@@ -21,7 +21,7 @@ namespace SmartMail.Cli.Commands
         public SaveIpInfoCommand()
             :base(Globals.Logger)
         {
-            
+            IsThreadSafe = false;
         }
 
         public ICommand MakeCommand(string[] args)

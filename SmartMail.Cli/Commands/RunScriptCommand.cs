@@ -11,7 +11,7 @@ namespace SmartMail.Cli.Commands
     /// </summary>
     public class RunScriptCommand : CommandBase, ICommand, ICommandFactory
     {
-        private readonly string path;
+        public readonly string path;
 
         public string CommandName => "RunScript";
 
@@ -26,11 +26,13 @@ namespace SmartMail.Cli.Commands
         public RunScriptCommand()
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             this.path = "";
         }
         public RunScriptCommand(string path)
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             this.path = path;
         }
         public ICommand MakeCommand(string[] args)
@@ -67,7 +69,7 @@ namespace SmartMail.Cli.Commands
                     script.Run();
                 }
                 else
-                    Log.Warning("==> INVALID SCRIPT <==");
+                    Log.Error("==> INVALID SCRIPT <==");
             }
             catch (Exception ex)
             {

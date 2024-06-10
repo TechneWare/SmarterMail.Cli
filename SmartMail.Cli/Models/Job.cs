@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -13,6 +14,10 @@ namespace SmartMail.Cli.Models
     /// </summary>
     public class Job : IDisposable
     {
+        //Thread safe tracker
+        public static object lockObj = new object();
+        public static bool isLocked = false;
+
         //Maintains a unique id
         private static int _nextId = 0;
         private bool disposedValue;
@@ -58,15 +63,36 @@ namespace SmartMail.Cli.Models
             //create the timer with an Inline delegate 
             timer = new Timer((object? stateInfo) =>
             {
-                refreshTimespan = TimeSpan.FromSeconds(this.interval);
-                this.NextRun = DateTime.UtcNow + refreshTimespan;
-                var timerUpdated = this.timer!.Change(refreshTimespan, Timeout.InfiniteTimeSpan);
-                if (!timerUpdated)
-                    Globals.Logger.Warning($"Filed to refresh timer for job {Id}:{Command}");
-
                 try
                 {
+                    LockJobs(command, $"Job #{Id}:{((ICommandFactory)this.command).CommandName} is waiting for other jobs to finish");
+
+                    refreshTimespan = TimeSpan.FromSeconds(this.interval);
+                    this.NextRun = DateTime.UtcNow + refreshTimespan;
+                    var timerUpdated = this.timer!.Change(refreshTimespan, Timeout.InfiniteTimeSpan);
+                    if (!timerUpdated)
+                        Globals.Logger.Warning($"Filed to refresh timer for job {Id}:{Command}");
+                    Globals.Logger.Prompt("\n\n");
+                    Globals.Logger.Info($"Executing Job #{Id}:{((ICommandFactory)this.command).CommandName}");
+
+                    if (command.GetType() == typeof(RunScriptCommand) && !string.IsNullOrEmpty(((RunScriptCommand)command).path))
+                    {
+                        var cmd = (RunScriptCommand)command;
+
+                        try
+                        {
+                            var fInfo = new FileInfo(cmd.path) ?? throw new Exception($"File Not Found");
+                            Globals.Logger.Info($"Script File: {fInfo!.Name}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Globals.Logger.Prompt($"\n==> JOB SCRIPT ERROR: {cmd.path}\n==> {ex.Message}");
+                            throw;
+                        }
+                    }
+
                     command.Run();
+
                     this.NumExecutions++;
                 }
                 catch (Exception ex)
@@ -75,10 +101,48 @@ namespace SmartMail.Cli.Models
                 }
                 finally
                 {
+                    UnlockJobs();
+
                     Utils.ShowDefaultPrompt();
                 }
 
+
             }, new AutoResetEvent(false), refreshTimespan, Timeout.InfiniteTimeSpan);
+        }
+
+        public static void UnlockJobs()
+        {
+            if (isLocked)
+            {
+                lock (lockObj)
+                {
+                    isLocked = false;
+                }
+            }
+        }
+
+        public static void LockJobs(Commands.ICommand command, string waitMessage)
+        {
+            if (isLocked)
+            {
+                var secondsWaited = 0;
+                do
+                {
+                    Thread.Sleep(1000);
+
+                    secondsWaited++;
+                    if (secondsWaited > 60 && secondsWaited % 60 == 0)
+                    {
+                        Globals.Logger.Warning(waitMessage);
+                    }
+
+                } while (isLocked);
+            }
+
+            lock (lockObj) //prevent non thread safe commands from running on top of eachother
+            {
+                isLocked = !((CommandBase)command).IsThreadSafe;
+            }
         }
 
         /// <summary>

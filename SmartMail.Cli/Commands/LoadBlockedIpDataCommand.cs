@@ -25,7 +25,10 @@ namespace SmartMail.Cli.Commands
         public string ExtendedDescription => "Data is anyalized with find subnets to identify groups of malicious IPs";
 
         public LoadBlockedIpDataCommand()
-            : base(Globals.Logger) { }
+            : base(Globals.Logger) 
+        {
+            IsThreadSafe = false;
+        }
 
         public ICommand MakeCommand(string[] args)
         {
@@ -37,11 +40,10 @@ namespace SmartMail.Cli.Commands
             if (!IsConnectionOk(Globals.ApiClient))
                 return;
 
-            Log.Info("---- Loading IP block data ----");
+            Log.Debug("---- Loading IP block data ----");
 
             var getDataScript = new Script(Log, "LoadData");
             getDataScript.Load([
-                    "GetTempIpBlockCounts",
                     "GetTempBlockIps",
                     "GetPermaBlockIps"
                 ]);
@@ -54,12 +56,13 @@ namespace SmartMail.Cli.Commands
 
             try
             {
+                Log.Debug("--- Reloading Cache ---");
                 Cache.Init(Cache.TempIpBlocks, Cache.PermaIpBlocks);
+                Log.Debug("--- Reloading Cache Done ---");
 
-                Log.Debug("Cache Loaded");
+                Log.Info($"Total Known IPs:{Cache.AllBlockedIps.Count}\tExisting Groups:{Cache.BlockedIpGroups.Count}");
+                Log.Debug($"IPs added to existing groups:{Cache.BlockedIpGroups.SelectMany(g => g.BlockedIps).Count()}");
 
-                Log.Info($"Total IPs:{Cache.AllBlockedIps.Count}\tExisting Groups:{Cache.BlockedIpGroups.Count}");
-                Log.Info($"IPs added to existing groups:{Cache.BlockedIpGroups.SelectMany(g => g.BlockedIps).Count()}");
                 Log.Info($"Proposed: {Cache.ProposedIpGroups.SelectMany(g => g.BlockedIps).Count()} IPs in {Cache.ProposedIpGroups.Count} New Groups");
 
                 var existingIPblocksToLeave = Cache.AllBlockedIps
@@ -89,10 +92,8 @@ namespace SmartMail.Cli.Commands
             }
             finally
             {
-                Log.Info("-------------------------------");
+                Log.Debug("---- Loading IP block data Done ----");
             }
         }
-
-
     }
 }

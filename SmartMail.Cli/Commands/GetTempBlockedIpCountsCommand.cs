@@ -25,7 +25,10 @@ namespace SmartMail.Cli.Commands
         public string ExtendedDescription => "";
 
         public GetTempBlockedIpCountsCommand()
-            : base(Globals.Logger) { }
+            : base(Globals.Logger)
+        {
+            IsThreadSafe = false;
+        }
 
         public ICommand MakeCommand(string[] args)
         {
@@ -34,9 +37,9 @@ namespace SmartMail.Cli.Commands
 
         public void Run()
         {
+            Log.Debug("---- Blocked IP Counts ----");
             if (IsConnectionOk(Globals.ApiClient))
             {
-                Log.Info("---- Blocked IP Counts ----");
                 var r = Globals.ApiClient?.GetCurrentlyBlockedIPsCount().ConfigureAwait(false).GetAwaiter().GetResult();
 
                 if (IsResponseOk(r))
@@ -44,9 +47,11 @@ namespace SmartMail.Cli.Commands
                     Cache.TempBlockCounts = r.counts;
                     foreach (var c in Cache.TempBlockCounts)
                         Log.Info($"{c.Key.PadLeft(20)}:{c.Value.ToString().PadLeft(5)}");
-                    Log.Info($"Total:".PadLeft(21) + $"{Cache.TotalTempBlocks}".PadLeft(5));
+
+                    Log.Info($"Total IDS(Temporary) blocks:".PadLeft(21) + $"{Cache.TotalTempBlocks}".PadLeft(5) + " Found");
                 }
             }
+            Log.Debug("---- Blocked IP Counts Done ----");
         }
     }
 }

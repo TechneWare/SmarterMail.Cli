@@ -14,9 +14,14 @@ namespace SmartMail.Cli.Commands
     public abstract class CommandBase
     {
         private readonly ICommandLogger _logger;
+
+        /// <summary>
+        /// Any command that writes to shared data used by other commands should set this to false in their constructors
+        /// </summary>
+        public bool IsThreadSafe { get; internal set; }
         public ICommandLogger Log { get { return _logger; } }
         public bool RequiresInteractiveMode { get; set; } = false; //Assume commands can be run from the commandline
-        protected CommandBase(ICommandLogger logger) 
+        protected CommandBase(ICommandLogger logger)
         {
             this._logger = logger;
         }
@@ -52,8 +57,8 @@ namespace SmartMail.Cli.Commands
         /// <returns>True if currently connected to the api, False if you need to login first</returns>
         public bool IsConnectionOk(ApiClient? apiClient)
         {
-            if (apiClient != null && 
-                apiClient.Session != null && 
+            if (apiClient != null &&
+                apiClient.Session != null &&
                 !string.IsNullOrEmpty(apiClient.Session.AccessToken))
             {
                 return true;

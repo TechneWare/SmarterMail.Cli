@@ -25,7 +25,7 @@ namespace SmartMail.Cli.Commands
         public SettingsCommand()
             : base(Globals.Logger)
         {
-
+            IsThreadSafe = false;
         }
 
         public ICommand MakeCommand(string[] args)

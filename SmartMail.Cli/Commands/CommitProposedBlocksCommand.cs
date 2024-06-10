@@ -25,7 +25,7 @@ namespace SmartMail.Cli.Commands
         public CommitProposedBlocksCommand()
             : base(Globals.Logger)
         {
-
+            IsThreadSafe = false;
         }
 
         public ICommand MakeCommand(string[] args)
@@ -92,13 +92,13 @@ namespace SmartMail.Cli.Commands
 
                 //For all the remaning temporary (IDS timout) blocks, move them to the black list
                 Log.Info("Moving remaining temp blocks to perma bans");
-                
+
                 var newIpBlocks = Cache.AllBlockedIps           //Select all temp blocks that are not part of a group
                     .Where(b => b.IsTemporary
                              && !Cache.ProposedIpGroups
                                       .SelectMany(g => g.BlockedIps)
                                       .Any(gp => gp.Ip == b.Ip)).ToList();
-                
+
                 foreach (var tb in newIpBlocks)
                 {
                     var existingTempBlock = allTempBlocks!.ipBlocks?.Where(b => b.ip == tb.Ip).FirstOrDefault();

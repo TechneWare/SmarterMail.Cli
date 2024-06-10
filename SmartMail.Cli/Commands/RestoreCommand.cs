@@ -29,12 +29,14 @@ namespace SmartMail.Cli.Commands
         public RestoreCommand()
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             ipStartsWithString = string.Empty;
         }
 
         public RestoreCommand(string ipStartsWithString)
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             this.ipStartsWithString = ipStartsWithString;
         }
 

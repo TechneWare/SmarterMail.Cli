@@ -158,9 +158,9 @@ namespace SmartMail.Cli.Models
             }
 
             if (isValid)
-                Log.Info($"Script loaded with {ScriptLines.Length} lines");
+                Log.Debug($"Script loaded with {ScriptLines.Length} lines");
             else
-                Log.Info($"Invalid Script");
+                Log.Info($"Script '{Name}' is invalid Script");
 
             return isValid;
         }
@@ -177,22 +177,25 @@ namespace SmartMail.Cli.Models
         /// </summary>
         public void List()
         {
-            Log.Info("");
-            Log.Info($"---- Listing for Script:{Name} -----");
+            Log.Prompt("\n");
             foreach (var line in ScriptLines ??= [])
-                Log.Info($"{Array.IndexOf(ScriptLines, line)}: {line}");
-            Log.Info($"---------- End of Listing ----------\n");
+                Log.Prompt($"{Array.IndexOf(ScriptLines, line)}: {line}\n");
+            Log.Prompt("\n");
         }
         /// <summary>
         /// Saves the script to a file
         /// </summary>
         /// <param name="filename"></param>
-        public void Save(string filename)
+        public void Save(string filename, string[] scriptHead)
         {
             try
             {
-                var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                ScriptLines = [$"# AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [{DateTime.UtcNow} UTC]", .. ScriptLines];
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                if(scriptHead != null && scriptHead.Any())
+                {
+                    ScriptLines = [.. scriptHead, .. ScriptLines];
+                }
+                
                 File.WriteAllLines($"{path}/{filename}", ScriptLines);
                 Log.Info($"Script saved to file: {path}/{filename}");
                 ScriptLines = CleanScript(ScriptLines);

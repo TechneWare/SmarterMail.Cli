@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartMail.Cli.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -66,16 +67,28 @@ namespace SmartMail.Cli.Commands
                     else
                     {
                         ICommand? command = parser.ParseCommand(args);
-                        if (command != null)
+
+                        try
                         {
-                            lastCommand = command;
-                            command.Run();
+                            if (command != null)
+                            {
+                                lastCommand = command;
+                                Job.LockJobs(command, $"User Command: {((ICommandFactory)command).CommandName} is waiting to run");
+                                command.Run();
+                            }
                         }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+                        finally
+                        {
+                            Job.UnlockJobs();
+                        }
+
                     }
                 } while ((lastCommand == null || lastCommand.GetType() != typeof(QuitCommand)) && !Globals.IsQuitSignaled);
             }
         }
-
-        
     }
 }

@@ -33,7 +33,7 @@ namespace SmartMail.Cli.Commands
         public void Run()
         {
             Cache.IsLoaded = false;
-            Log.Info("Cache has been invalidated");
+            Log.Debug("Cache has been invalidated");
         }
     }
 }

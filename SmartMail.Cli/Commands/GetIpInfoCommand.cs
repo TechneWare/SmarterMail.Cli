@@ -27,11 +27,13 @@ namespace SmartMail.Cli.Commands
         public GetIpInfoCommand()
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             ipAddress = "";
         }
         public GetIpInfoCommand(string IpAddress)
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             ipAddress = IpAddress;
         }
         public ICommand MakeCommand(string[] args)

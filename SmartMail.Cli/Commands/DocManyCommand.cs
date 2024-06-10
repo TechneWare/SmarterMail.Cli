@@ -28,11 +28,13 @@ namespace SmartMail.Cli.Commands
         public DocManyCommand()
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             this.number = 0;
         }
         public DocManyCommand(int number)
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             this.number = number;
         }
 
@@ -87,7 +89,7 @@ namespace SmartMail.Cli.Commands
                     Log.SetLogLevel(curLogLevel);
                 }
                 else if (undocumented.Count == 0 && Cache.AllBlockedIps.Count(i => !i.IsTemporary) > 0)
-                    Log.Info("All IPs are documented");
+                    Log.Info("All Perma Banned IPs are documented");
                 else
                     Log.Info("Nothing to Document. Try running 'load' first.");
             }

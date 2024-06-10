@@ -25,7 +25,7 @@ namespace SmartMail.Cli.Commands
         public MakeProposedScript()
             : base(Globals.Logger)
         {
-
+            IsThreadSafe = false;
         }
 
         public ICommand MakeCommand(string[] args)
@@ -35,17 +35,26 @@ namespace SmartMail.Cli.Commands
 
         public void Run()
         {
+            var curLogLevel = Log.LogLevel;
+            Log.SetLogLevel(ICommandLogger.LogLevelType.Warning);
             // Reset the cache and generate a new blocking strategy
             var loadData = new LoadBlockedIpDataCommand().MakeCommand([]);
             loadData.Run();
+            Log.SetLogLevel(curLogLevel);
 
-            Log.Info("---- Building Propossed IP block Script ----");
+            Log.Debug("---- Building Propossed IP block Script ----");
             var script = new Script(Log, "CommitProposedBans");
 
             try
             {
-                var allTempBlocks = Cache.TempIpBlocks;
                 Log.Debug("Setting up CIDR groups");
+
+                var permaBansToRemove = Cache.ProposedIpGroups.SelectMany(g => g.BlockedIps).Where(i => !i.IsTemporary).Count();
+                var allTempBlocks = Cache.TempIpBlocks;
+               
+                if (Cache.ProposedIpGroups.Any())
+                    script.Add($"print === Making {Cache.ProposedIpGroups.Count} CIDR Groups and removing {permaBansToRemove} perma bans");
+                
                 foreach (var grp in Cache.ProposedIpGroups)
                 {
                     //Create the new group, assume not using Virus Total api (No Score Avaialable)
@@ -94,6 +103,9 @@ namespace SmartMail.Cli.Commands
                     .Select(i => Cache.AllBlockedIps.First(c => c.Ip == i))
                     .ToList();
 
+                if (newIpBlocks.Any())
+                    script.Add($"print === Moving {newIpBlocks.Count} temporary IDS block(s) to the blacklist");
+
                 foreach (var tb in newIpBlocks)
                 {
                     var existingTempBlock = allTempBlocks.Where(b => b.ip == tb.Ip).FirstOrDefault();
@@ -113,14 +125,25 @@ namespace SmartMail.Cli.Commands
                         Log.Warning($"Unable to Locate existing temp block on {tb.Ip}, so skipped it");
                 }
 
-                if (script.ScriptLines.Any())
-                    script.Add("InvalidateCache"); //Since data may have changed, invalidate the cache
-                else
-                    script.Add("Print No new IPs to analize at this time");
+                string[] scriptHead = [
+                        $"# AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [{DateTime.UtcNow} UTC]",
+                        $"# Will Create {Cache.ProposedIpGroups.Count} CIDR groups and remove {permaBansToRemove} perma bans",
+                        $"# Will Move {newIpBlocks.Count} Temporary IDS blocks to the blacklist",
+                         "# ============================================================================="
+                ];
 
-                Log.Info("---- Done Building Propossed IP block Script ----");
-                script.List();
-                script.Save("commit_bans.txt");
+                if (script.ScriptLines.Any())
+                {
+                    script.Add("InvalidateCache"); //Since data may have changed, invalidate the cache
+                    Log.Info($"New Blocking Script Created");
+                    script.List();
+                }
+                else
+                    script.Add("Print No new IPs to analyze at this time");
+
+                script.Save("commit_bans.txt", scriptHead);
+
+                Log.Debug("---- Done Building Propossed IP block Script ----");
             }
             catch (Exception ex)
             {
