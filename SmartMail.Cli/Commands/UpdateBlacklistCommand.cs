@@ -17,7 +17,7 @@ namespace SmartMail.Cli.Commands
 
         public string Description => "Builds a blocking script and executes it in one step";
 
-        public string ExtendedDescription => "This is equivelent to running: 'Make' followed by 'run commit_bans.txt'";
+        public string ExtendedDescription => "This is equivalent to running: 'Make' followed by 'run commit_bans.txt'";
 
         public UpdateBlacklistCommand()
             : base(Globals.Logger)
