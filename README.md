@@ -727,7 +727,7 @@ Here, we can see the basic pattern for an API method:
 	- `var loginRequest = new Models.Requests.Credential() { username = username, password = password };`
 - Pass these values to the ExecuteRequest method with the proper verb
 	- `var result = await ExecuteRequest(httpMethod: HttpMethod.Post, requestUri: apiPath, requestObj: loginRequest);`
-- Convert the response into the C# IReponse object
+- Convert the response into the IReponse object
 	- `var response = JsonConvert.DeserializeObject<LoginResponse>(result.data);`
 - If the response was not successful, then populate the error data
 	- 
@@ -968,9 +968,7 @@ public void Run()
     Log.Debug("---- Blocked IP Counts Done ----");
 }
 ```
-
 - If a command requires a connection to the API before it can be executed, call `IsConnectionOk` passing in the API client.
-    - 
 ```csharp
 if (IsConnectionOk(Globals.ApiClient))
 {
@@ -978,7 +976,6 @@ if (IsConnectionOk(Globals.ApiClient))
 }
 ```
 - If that succeeds, call the API and check the response with `IsResponseOk`.
-    - 
 ```csharp
 if (IsResponseOk(r))
 {
