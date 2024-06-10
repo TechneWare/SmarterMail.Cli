@@ -752,14 +752,11 @@ public class PrintCommand : CommandBase, ICommand, ICommandFactory
     private readonly string message;
 
     public string CommandName => "Print";
-
     public string CommandArgs => "message";
-
     public string[] CommandAlternates => [];
-
     public string Description => "Prints a message to the output";
-
     public string ExtendedDescription => "";
+
     public PrintCommand()
         : base(Globals.Logger)
     {
@@ -770,6 +767,7 @@ public class PrintCommand : CommandBase, ICommand, ICommandFactory
     {
         this.message = message;
     }
+
     public ICommand MakeCommand(string[] args)
     {
         if (args.Length <= 1)
