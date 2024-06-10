@@ -644,12 +644,14 @@ _Useful in scripts_
 _EG: to set the timing between two jobs with the same period, introduce a delay between the `sched` commands_
 
 # Extending the API
+
 Extending the API should be straightforward.  The approach is to:
 - Pick an endpoint you are interested in
 - Create any models to send/receive for that endpoint
 - Add any required methods to the API to use the endpoint
 
 The IResponse interface is used to give the caller generalized information about the status of a request.
+
 ```csharp
 public interface IResponse
 {
@@ -694,7 +696,7 @@ public class Credential
     public string password { get; set; } = string.Empty;
 }
 ```
-Again, the spelling of the properties is specific to the expected JSON spelling by the server.
+Again, the spelling of the properties is specific to the server's expected JSON spelling.
 
 Then, we can put it all together by creating the supporting method for the `ApiClient` class.
 ```
@@ -718,7 +720,7 @@ public async Task<LoginResponse> Login(string username, string password)
     return response;
 }
 ```
-Here we can see the basic pattern for an API method:
+Here, we can see the basic pattern for an API method:
 - Set the path to the API endpoint we want to use
 	- `string apiPath = "api/v1/auth/authenticate-user";`
 - Create the request object
