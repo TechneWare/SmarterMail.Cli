@@ -18,7 +18,7 @@ namespace SmartMail.Cli.Commands
         /// Initilizes the parser with a list of commands
         /// </summary>
         /// <param name="commands">The commands this parser will use</param>
-        public CommandParser(IEnumerable<ICommandFactory> commands)  
+        public CommandParser(IEnumerable<ICommandFactory> commands)
         {
             this.commands = commands;
         }
@@ -55,11 +55,11 @@ namespace SmartMail.Cli.Commands
         {
             ICommandFactory? cmd = null;
 
-            //Matching logic: Match if the request matches the start of the primary command name
-            //Or Match if the request matches in full, any of the alternate commands
-            var matched = commands.Where(c =>
-                        c.CommandName.StartsWith(requestedCommand, StringComparison.CurrentCultureIgnoreCase)
-                        || c.CommandAlternates.Any(ca => ca.Equals(requestedCommand, StringComparison.CurrentCultureIgnoreCase)));
+            //Match if the request matches any alternate in full
+            //Otherwise look for commands with a name that starts with the request
+            var matched = commands.Where(c => c.CommandAlternates.Any(ca => ca.Equals(requestedCommand, StringComparison.CurrentCultureIgnoreCase)));
+            if (!matched.Any())
+                matched = commands.Where(c => c.CommandName.StartsWith(requestedCommand, StringComparison.CurrentCultureIgnoreCase));
 
             if (matched.Any())
             {

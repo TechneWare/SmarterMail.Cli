@@ -27,6 +27,7 @@ namespace SmartMail.Cli
         public static List<Models.Job> Jobs { get; set; } = [];
         public static bool IsQuitSignaled { get; set; } = false;
         public static bool IsInteractiveMode { get; set; } = false;
+        public static bool ShowScriptProgress { get; set; } = false;
 
         // Variables to keep track of quoatas for the Virus Total api
         // Free Quota is Request based: 4/min 500/hr 15.5k/month

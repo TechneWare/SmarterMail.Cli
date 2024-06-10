@@ -91,6 +91,8 @@ namespace SmartMail.Cli.Models
                 {
                     if (!string.IsNullOrEmpty(progressChar))
                         Log.Prompt(progressChar);
+                    else if (Globals.ShowScriptProgress)
+                        Log.Prompt(".");
 
                     command.Run();
 
@@ -186,16 +188,19 @@ namespace SmartMail.Cli.Models
         /// Saves the script to a file
         /// </summary>
         /// <param name="filename"></param>
-        public void Save(string filename, string[] scriptHead)
+        public void Save(string filename, string[] scriptHead, string[] scriptFooter)
         {
             try
             {
                 var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                if(scriptHead != null && scriptHead.Any())
-                {
+
+                if (scriptHead != null && scriptHead.Any())
                     ScriptLines = [.. scriptHead, .. ScriptLines];
-                }
-                
+
+                if (scriptFooter != null && scriptFooter.Any())
+                    ScriptLines = [.. ScriptLines, .. scriptFooter];
+
+
                 File.WriteAllLines($"{path}/{filename}", ScriptLines);
                 Log.Info($"Script saved to file: {path}/{filename}");
                 ScriptLines = CleanScript(ScriptLines);

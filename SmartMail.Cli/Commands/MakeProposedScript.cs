@@ -129,8 +129,15 @@ namespace SmartMail.Cli.Commands
                         $"# AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [{DateTime.UtcNow} UTC]",
                         $"# Will Create {Cache.ProposedIpGroups.Count} CIDR groups and remove {permaBansToRemove} perma bans",
                         $"# Will Move {newIpBlocks.Count} Temporary IDS blocks to the blacklist",
-                         "# ============================================================================="
+                        $"# =============================================================================",
+                        $"setoption loglevel warning",
+                        $"setoption progress on"
                 ];
+
+                string[] scriptFoot = [
+                        $"setoption loglevel {Log.LogLevel}",
+                        $"setoption progress off"
+                    ];
 
                 if (script.ScriptLines.Any())
                 {
@@ -141,7 +148,7 @@ namespace SmartMail.Cli.Commands
                 else
                     script.Add("Print No new IPs to analyze at this time");
 
-                script.Save("commit_bans.txt", scriptHead);
+                script.Save("commit_bans.txt", scriptHead, scriptFoot);
 
                 Log.Debug("---- Done Building Propossed IP block Script ----");
             }

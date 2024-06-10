@@ -27,8 +27,12 @@ namespace SmartMail.Cli.Commands
         /// <param name="level">The level to set</param>
         public void SetLogLevel(ICommandLogger.LogLevelType level)
         {
+            var oldLevel = this.LogLevel;
             this._loglevel = level;
             Debug($"LogLevel changed to: {level}");
+
+            if (oldLevel == ICommandLogger.LogLevelType.Debug && level != ICommandLogger.LogLevelType.Debug)
+                Info($"LogLevel changed to: {level}");
         }
 
         /// <summary>
