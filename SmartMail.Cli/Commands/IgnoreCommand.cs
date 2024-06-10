@@ -27,17 +27,23 @@ namespace SmartMail.Cli.Commands
             : base(Globals.Logger)
         {
             IsThreadSafe = false;
+            ip = "";
+            description = "";
         }
         public IgnoreCommand(string ip, string description)
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             this.ip = ip;
             this.description = description;
         }
         public IgnoreCommand(bool showList)
             : base(Globals.Logger)
         {
+            IsThreadSafe = false;
             this.showList = showList;
+            ip = "";
+            description = "";
         }
         public ICommand MakeCommand(string[] args)
         {

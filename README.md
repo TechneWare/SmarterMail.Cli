@@ -643,4 +643,354 @@ _If you would rather examine the script before execution, then run `make` by its
 _Useful in scripts_
 _EG: to set the timing between two jobs with the same period, introduce a delay between the `sched` commands_
 
+# Extending the API
+Extending the API should be striaght forward.  The approach is to:
+- Pick an endpoint your interested in
+- Create any models to send/receive for that endpoint
+- Add any required methods to the API to use the endpoint
+
+The IResponse interface is used to give the caller generalized information about the status of a request.
+```csharp
+public interface IResponse
+{
+    public bool success { get; set; }
+    public Error? ResponseError { get; set; }
+}
+```
+_Currently used in the CLI by the `CommandBase` class, to give all commands the ability to check results of an API call_
+
+For example, the login response:
+```csharp
+public class LoginResponse : IResponse
+{
+    public string emailAddress { get; set; } = string.Empty;
+    public bool changePasswordNeeded { get; set; } = false;
+    public bool displayWelcomeWizard { get; set; } = false;
+    public bool isAdmin { get; set; } = false;
+    public bool isDomainAdmin { get; set; } = false;
+    public bool isLicensed { get; set; } = false;
+    public string autoLoginToken { get; set; } = string.Empty;
+    public string autoLoginUrl { get; set; } = string.Empty;
+    public string localeId { get; set; } = string.Empty;
+    public bool isImpersonating { get; set; } = false;
+    public bool canViewPasswords { get; set; } = false;
+    public string accessToken { get; set; } = string.Empty;
+    public string refreshToken { get; set; } = string.Empty;
+    public DateTime? accessTokenExpiration { get; set; }
+    public string username { get; set; } = string.Empty;
+    public bool success { get; set; } = false;
+    public int resultCode { get; set; } = -1;
+
+    public Error? ResponseError { get; set; }
+}
+```
+The properties of this class are intentionally spelled the same as the response values returned from the server. This allows easy deserialization from the JSON response to the LoginResponse object.
+
+Under Models.Requests you can find the Credential object, which is used to send a login request to the server.
+```
+public class Credential
+{
+    public string username { get; set; } = string.Empty;
+    public string password { get; set; } = string.Empty;
+}
+```
+Again, the spelling of the properties is specific to the expected JSON spelling by the server.
+
+Then we can put it all together by creating the supporting method to the `ApiClient` class.
+```
+public async Task<LoginResponse> Login(string username, string password)
+{
+    string apiPath = "api/v1/auth/authenticate-user";
+    var loginRequest = new Models.Requests.Credential() { username = username, password = password };
+
+    var result = await ExecuteRequest(httpMethod: HttpMethod.Post, requestUri: apiPath, requestObj: loginRequest);
+
+    var response = JsonConvert.DeserializeObject<LoginResponse>(result.data);
+    if (response == null || !response.success)
+    {
+        response = new LoginResponse()
+        {
+            resultCode = response?.resultCode ?? 401,
+            ResponseError = result.error
+        };
+    }
+
+    return response;
+}
+```
+Here we can see the basic pattern for an API method:
+- Set the path to the API endpoint we want to use
+	- `string apiPath = "api/v1/auth/authenticate-user";`
+- Create the request object
+	- `var loginRequest = new Models.Requests.Credential() { username = username, password = password };`
+- Pass these values to the ExecuteRequest method with the proper verb
+	- `var result = await ExecuteRequest(httpMethod: HttpMethod.Post, requestUri: apiPath, requestObj: loginRequest);`
+- Convert the response into the C# IReponse object
+	- `var response = JsonConvert.DeserializeObject<LoginResponse>(result.data);`
+- If the response was not succesful, then populate the error data
+	- 
+```
+response = new LoginResponse()
+{
+    resultCode = response?.resultCode ?? 401,
+    ResponseError = result.error
+};
+```
+
+This same basic pattern can be used to implement as many of the API endpoints as you would like.
+
+# Extending the CLI
+While this may not be quite as straight forwad as adding endpoints to the API, adding new commands is fairly simple. The more complex part is figuring out how those commands should interact with the internals of the CLI utility.
+
+Every command inherits from `CommandBase`, `ICommand` and `ICommandFactory`
+
+Lets take a look at this very basic example of implementing the `Print` command:
+```csharp
+public class PrintCommand : CommandBase, ICommand, ICommandFactory
+{
+    private readonly string message;
+
+    public string CommandName => "Print";
+
+    public string CommandArgs => "message";
+
+    public string[] CommandAlternates => [];
+
+    public string Description => "Prints a message to the output";
+
+    public string ExtendedDescription => "";
+    public PrintCommand()
+        : base(Globals.Logger)
+    {
+        message = "";
+    }
+    public PrintCommand(string message)
+        : base(Globals.Logger)
+    {
+        this.message = message;
+    }
+    public ICommand MakeCommand(string[] args)
+    {
+        if (args.Length <= 1)
+            return new PrintCommand();
+        else
+            return new PrintCommand(string.Join(" ", args.Skip(1)));
+    }
+
+    public void Run()
+    {
+        Log.Prompt($"\n{message}");
+    }
+}
+```
+
+## ICommandFactory properties
+When building a new command, we must set the following properties:
+- Inherit from the base class and interfaces
+    - `public class PrintCommand : CommandBase, ICommand, ICommandFactory`
+- Provide default values for the CommandName, CommandArgs, CommandAlternates and any Description/Extended Description
+    - `public string CommandName => "Print";` sets the full name of the description
+    - `public string CommandArgs => "message";` lists the arguments that can be used with the command
+    - `public string[] CommandAlternates => [];` an array of strings that represents alternates for this command
+        - EG: `["pt","?"]` could be used to alias the print command to `pt` and `?`.
+    - `public string Description => "Prints a message to the output";` is the basic description of this command
+    - `public string ExtendedDescription => "";` is the extended description of this command
+
+These values are used by the `Help` command to display documentation about this command.  `CommandName` and `CommandAlternates` are used to parse the commandline and locate this command.
+
+## Constructor(s)
+Each constructor should call `: base(Globals.Logger)` to inject the logger and configure any basic settings.
+
+When a command is located by the parser, the `MakeCommand` method is called, passing in any arguments required to configure that command.  Depending on the arguments, you may need one or more constructors. In this case we need two.  One for when no arguments are passed and one for when arguments are passed.
+
+```csharp
+public ICommand MakeCommand(string[] args)
+{
+    if (args.Length <= 1)
+        return new PrintCommand();
+    else
+        return new PrintCommand(string.Join(" ", args.Skip(1)));
+}
+```
+
+- Since args should always have at least one element, the command name itself, then we can return the basic command if 1 or fewer arguments are passed: 
+```csharp
+if (args.Length <= 1)
+return new PrintCommand();
+```
+- In every other case, there are 2 or more args, so we treat the rest as the message to use for this command and use the second constructor to configure it
+```
+else
+        return new PrintCommand(string.Join(" ", args.Skip(1)));
+```
+- Here the second constructor internalizes the message that it should display:
+```csharp
+public PrintCommand(string message)
+    : base(Globals.Logger)
+{
+    this.message = message;
+}
+```
+
+Finally, if the command parses and everything is ok, then the `Run` method is called from the `ICommand` interface and is where the actual work this command does is implemented:
+```csharp
+public void Run()
+{
+    Log.Prompt($"\n{message}");
+}
+```
+
+With all this done, we can now:
+- Type `Print Hello World!` into the command prompt and it will do just that.
+- Type `Help Print` into the command prompt and it will display the information about how to call the command and it's description(s)
+
+## Command naming
+Commands are searched for by:
+- An exact match of any of the `CommandAlternates`
+- If that fails, then a starts with match is done on the `CommandName`
+
+If for some reason two commands are returned; either you used a duplicate CommandAlternate or two or more CommandName(s) start the same, then it will fail to execute and display information about what possible commands you might have meant.  
+
+For exampel, if you enter `p hello world`, you might expect it to print hello world, but instead you will get the following back:
+```logos
+Did you mean one of these?
+Print                    -Prints a message to the output
+PermaBan                 -Adds or Updates an IP to the permanent black list
+```
+Because both commands start with `P` and neither command is an exact match for `P`.
+
+## CommandBase
+The `CommandBase` object is provided to give every command some basic configuration and API status methods.  
+See: `SmartMail.Cli.Commands.CommandBase`
+
+```csharp
+/// <summary>
+/// Base class for commands
+/// </summary>
+public abstract class CommandBase
+{
+    private readonly ICommandLogger _logger;
+
+    /// <summary>
+    /// Any command that writes to shared data used by other commands should set this to false in their constructors
+    /// </summary>
+    public bool IsThreadSafe { get; internal set; }
+    public ICommandLogger Log { get { return _logger; } }
+    public bool RequiresInteractiveMode { get; set; } = false; //Assume commands can be run from the commandline
+    protected CommandBase(ICommandLogger logger)
+    {
+        this._logger = logger;
+    }
+
+    /// <summary>
+    /// Commands that process api responses can use this to test if the response was ok
+    /// </summary>
+    /// <param name="response">The response returned from an API</param>
+    /// <returns>True if the response is ok</returns>
+    public bool IsResponseOk(IResponse? response)
+    {
+        if (response != null && response.success)
+        {
+            return true;
+        }
+        else if (response != null && response.ResponseError != null)
+        {
+            Log.Error($"Failed: {response.ResponseError}");
+        }
+        else
+        {
+            Log.Error("Unknown Error");
+        }
+
+        return false;
+
+    }
+
+    /// <summary>
+    /// Commands that access the api can use this to test if the connection to the server is ok
+    /// </summary>
+    /// <param name="apiClient">A SmarterMail api client object</param>
+    /// <returns>True if currently connected to the api, False if you need to login first</returns>
+    public bool IsConnectionOk(ApiClient? apiClient)
+    {
+        if (apiClient != null &&
+            apiClient.Session != null &&
+            !string.IsNullOrEmpty(apiClient.Session.AccessToken))
+        {
+            return true;
+        }
+        else
+        {
+            Log.Error("You must be logged in to use this command");
+            return false;
+        }
+    }
+}
+```
+
+This is fairly well documented internally, however here is some discussion on what it does:
+
+### Properties
+- `IsThreadSafe`: Defaults to True, but should be set to false in any constructors where that command will update data used by another command.  
+  - It allows thread blocking to occure if this command is active when another command fires, making the new command wait for the current command to finish.
+    - The command `load` for example is not thread safe, since it loads data into memory and generates a blocking strategy.
+    - If other commands that rely on the data in memory, or that would update the data in memory were to fire at the same time, then this will make those commands wait until the `load` command finishes.
+- `Log`: Points at the ICommandLogger interface that is used by all commands to log output
+- `RequiresInteractiveMode`: Should be set to true if this command requires interactive mode. If launched from the commandline these commands will cause a shell to be launched to support it.
+    - The command `sched` for example requires interactive mode, since scheduled jobs require an active, always running instance, of the CLI in order to execute scheduled jobs.
+
+### Methods
+- `public bool IsResponseOk(IResponse? response)`: Used by commands to generalize response success checking.
+- `public bool IsConnectionOk(ApiClient? apiClient)`: Used by commands to generalize checking for an API connection
+
+These methods eliminate the need to do this logic in every command that uses the API.
+
+For example, consider the `Run` method on the `GetTempIpBlockCounts` command:
+```csharp
+public void Run()
+{
+    Log.Debug("---- Blocked IP Counts ----");
+    if (IsConnectionOk(Globals.ApiClient))
+    {
+        var r = Globals.ApiClient?.GetCurrentlyBlockedIPsCount().ConfigureAwait(false).GetAwaiter().GetResult();
+
+        if (IsResponseOk(r))
+        {
+            Cache.TempBlockCounts = r.counts;
+            foreach (var c in Cache.TempBlockCounts)
+                Log.Info($"{c.Key.PadLeft(20)}:{c.Value.ToString().PadLeft(5)}");
+
+            Log.Info($"Total IDS(Temporary) blocks:".PadLeft(21) + $"{Cache.TotalTempBlocks}".PadLeft(5) + " Found");
+        }
+    }
+    Log.Debug("---- Blocked IP Counts Done ----");
+}
+```
+
+- If a command requires a connection to the API before it can be executed, then call `IsConnectionOk` passing in the API client.
+    - 
+```csharp
+if (IsConnectionOk(Globals.ApiClient))
+{
+    ...
+}
+```
+- If that succeeds, then you can call the API and then check the response with `IsResponseOk`.
+    - 
+```csharp
+if (IsResponseOk(r))
+{
+    ...
+}
+```
+- If both conditions are good, then you can process the response. In this case it stores the retreived data into memory and displays it at the LogLevel of Info.
+```csharp
+Cache.TempBlockCounts = r.counts;
+foreach (var c in Cache.TempBlockCounts)
+    Log.Info($"{c.Key.PadLeft(20)}:{c.Value.ToString().PadLeft(5)}");
+
+Log.Info($"Total IDS(Temporary) blocks:".PadLeft(21) + $"{Cache.TotalTempBlocks}".PadLeft(5) + " Found");
+```
+
+# Credits
 Credit to: @github/jsakamoto for creating a robust IP address range calculator (https://github.com/jsakamoto/ipaddressrange/).

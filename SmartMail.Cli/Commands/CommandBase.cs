@@ -47,7 +47,6 @@ namespace SmartMail.Cli.Commands
             }
 
             return false;
-
         }
 
         /// <summary>
