@@ -818,7 +818,7 @@ if (args.Length <= 1)
 return new PrintCommand();
 ```
 - In every other case, there are 2 or more args, so we treat the rest as the message to use for this command and use the second constructor to configure it
-```
+```csharp
 else
     return new PrintCommand(string.Join(" ", args.Skip(1)));
 ```
