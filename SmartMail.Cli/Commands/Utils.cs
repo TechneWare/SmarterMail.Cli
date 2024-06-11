@@ -79,6 +79,7 @@ namespace SmartMail.Cli.Commands
         {
             Log.Prompt(prompt);
             string? commandInput = Console.ReadLine() ?? "";
+            Log.LogToFile($"\nUser Input: {commandInput}\n");
             return commandInput;
         }
 

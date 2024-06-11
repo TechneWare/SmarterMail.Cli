@@ -7,10 +7,15 @@ namespace SmartMail.Cli
 {
     public class Settings
     {
-        private static readonly string path;
         private static readonly string configFile;
-        public string VirusTotalApiKey { get; set; } = "";
+        public static readonly string path;
+        public static string LogFileName => $"{path}/SmarterMail.Cli.log";
+        public static string LogFileNameTimeStamped => $"{path}/SmarterMail.Cli_{DateTime.UtcNow:yyyyMMddHHmmss}.log";
+        public bool UseFileLogging { get; set;} = false;
         public ICommandLogger.LogLevelType LoggingLevel { get; set; } = ICommandLogger.LogLevelType.Info;
+        public int MaxLogSizeKB { get; set; } = 1024; //Default 1Meg
+        public int MaxLogFiles { get; set; } = 10; 
+        public string VirusTotalApiKey { get; set; } = "";
         public HttpProtocol Protocol { get; set; } = HttpProtocol.https;
         public string ServerAddress { get; set; } = "[server domain/IP address]";
         public bool UseAutoTokenRefresh { get; set; } = true;
@@ -64,7 +69,7 @@ namespace SmartMail.Cli
             return GetSettings();
         }
 
-        public static string JsonPrettify(string json)
+        private static string JsonPrettify(string json)
         {
             using var stringReader = new StringReader(json);
             using var stringWriter = new StringWriter();

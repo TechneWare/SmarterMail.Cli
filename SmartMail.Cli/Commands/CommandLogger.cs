@@ -58,6 +58,7 @@ namespace SmartMail.Cli.Commands
                 var lvl = useLogLevel ? level.ToString().PadRight(10) : "";
                 var output = UniCode202Regex().Replace($"{tStamp}{lvl}: {message}", " ");
                 Console.WriteLine(output);
+                LogToFile(output);
             }
         }
 
@@ -70,6 +71,51 @@ namespace SmartMail.Cli.Commands
         {
             message = UniCode202Regex().Replace(message, " ");
             Console.Write(message);
+            LogToFile(message, AsText: true);
+        }
+
+        public void LogToFile(string message, bool AsText = false)
+        {
+            if (Globals.Settings.UseFileLogging)
+            {
+                try
+                {
+                    if (File.Exists(Settings.LogFileName))
+                    {
+                        var fInfo = new FileInfo(Settings.LogFileName);
+                        if (fInfo != null && fInfo.Length >= Globals.Settings.MaxLogSizeKB * 1024)
+                        {
+                            //Splilt the log
+                            var splitFileName = Settings.LogFileNameTimeStamped;
+                            File.Copy(Settings.LogFileName, splitFileName);
+                            File.WriteAllText(Settings.LogFileName, string.Empty);
+                            File.AppendAllLines(Settings.LogFileName, [$"Log Split to: {splitFileName}"]);
+                        }
+
+                        string[] logFiles = [];
+                        do
+                        {
+                            if (logFiles.Length > 0)
+                                File.Delete(logFiles.First());
+
+                            logFiles = [.. Directory.GetFiles(Settings.path, "SmarterMail.Cli*.log")
+                                            .Where(f => f != "SmarterMail.Cli.log")
+                                            .OrderBy(f => f)];
+
+                        } while (logFiles.Length > Globals.Settings.MaxLogFiles);
+
+                    }
+
+                    if (AsText)
+                        File.AppendAllText(Settings.LogFileName, message);
+                    else
+                        File.AppendAllLines(Settings.LogFileName, [message]);
+                }
+                catch (Exception ex)
+                {
+                    Error($"==> Error Logging to File: {ex.Message}");
+                }
+            }
         }
 
         /// <summary>

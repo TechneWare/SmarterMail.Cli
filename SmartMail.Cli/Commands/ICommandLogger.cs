@@ -20,8 +20,9 @@ namespace SmartMail.Cli.Commands
         public void SetLogLevel(LogLevelType level);
         public void Log(string message);
         public void Log(string message, LogLevelType level);
+        public void LogToFile(string message, bool AsText = false);
         public void Prompt(string message);
-    
+
         public void Debug(string message);
         public void Info(string message);
         public void Warning(string message);

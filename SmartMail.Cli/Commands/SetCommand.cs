@@ -54,7 +54,7 @@ namespace SmartMail.Cli.Commands
                     switch (value.Trim().ToLower())
                     {
                         case "":
-                            Log.Info("Sets the logging level. EG: set loglevel debug");
+                            Log.Info("Sets the logging level. EG: setoption loglevel debug");
                             break;
                         case "debug": Globals.Logger.SetLogLevel(ICommandLogger.LogLevelType.Debug); break;
                         case "info": Globals.Logger.SetLogLevel(ICommandLogger.LogLevelType.Info); break;
@@ -69,7 +69,7 @@ namespace SmartMail.Cli.Commands
                     switch (value.Trim().ToLower())
                     {
                         case "":
-                            Log.Info("Sets script progress indicators to on or off EG: set progress on");
+                            Log.Info("Sets script progress indicators to on or off EG: setoption progress on");
                             break;
                         case "on":
                             Globals.ShowScriptProgress = true;
@@ -82,8 +82,26 @@ namespace SmartMail.Cli.Commands
                             break;
                     }
                     break;
+                case "logfile":
+                    switch (value.Trim().ToLower())
+                    {
+                        case "":
+                            Log.Info("Sets logging to file on or off EG: setoption logfile on");
+                            break;
+                        case "on":
+                            Globals.Settings.UseFileLogging = true;
+                            break;
+                        case "off":
+                            Globals.Settings.UseFileLogging = false;
+                            break;
+                        default:
+                            Log.Error("Invalid logfile value: must be either on or off");
+                            break;
+                    }
+                    break;
                 default:
-                    Log.Error($"Unkown set option: {option}");
+                    Log.Error($"Unkown option: {option}");
+                    Log.Warning($"Valid Values: logfile, loglevel, progress");
                     break;
             }
         }
