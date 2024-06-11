@@ -56,7 +56,7 @@ namespace SmartMail.Cli.Commands
             {
                 var tStamp = useTimeStamps ? $"[{DateTime.UtcNow} UTC]" : "";
                 var lvl = useLogLevel ? level.ToString().PadRight(10) : "";
-                var output = ReplaceUtf202WithSpaceRegex().Replace($"{tStamp}{lvl}: {message}", " ");
+                var output = UniCode202Regex().Replace($"{tStamp}{lvl}: {message}", " ");
                 Console.WriteLine(output);
             }
         }
@@ -68,7 +68,7 @@ namespace SmartMail.Cli.Commands
         /// <param name="message">The message to display as a prompt</param>
         public void Prompt(string message)
         {
-            message = ReplaceUtf202WithSpaceRegex().Replace(message, " ");
+            message = UniCode202Regex().Replace(message, " ");
             Console.Write(message);
         }
 
@@ -126,6 +126,6 @@ namespace SmartMail.Cli.Commands
         }
 
         [GeneratedRegex(@"[\u202F]")]
-        private static partial Regex ReplaceUtf202WithSpaceRegex();
+        private static partial Regex UniCode202Regex();
     }
 }
