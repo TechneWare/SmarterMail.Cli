@@ -63,8 +63,12 @@ namespace SmartMail.Cli.Commands
                     loadCacheScript.Run();
                 }
 
-                var undocumented = Cache.AllBlockedIps.Where(i => !i.IsTemporary && !i.IsDocumented).Take(number).ToList();
-                if (undocumented.Any())
+                var undocumented = Cache.AllBlockedIps
+                    .Where(i => !i.IsTemporary && !i.IsDocumented)
+                    .Take(number)
+                    .ToList();
+
+                if (undocumented.Count != 0)
                 {
 
                     Log.Info($"Found {undocumented.Count} IPs to document");
@@ -80,7 +84,7 @@ namespace SmartMail.Cli.Commands
                     }
 
                     docScript.Add("SaveIpInfo"); //Persist the data retreived at the end
-                    docScript.Add("load");  //Reload the cache when done
+                    docScript.Add("InvalidateCache");  //invalidate the cache when done
 
                     Log.Prompt("\nRunning");
                     docScript.Run(".");

@@ -44,9 +44,9 @@ namespace SmartMail.Cli.Commands
 
                 if (IsResponseOk(r))
                 {
-                    Cache.TempBlockCounts = r.counts;
+                    Cache.TempBlockCounts = r!.counts;
                     foreach (var c in Cache.TempBlockCounts)
-                        Log.Info($"{c.Key.PadLeft(20)}:{c.Value.ToString().PadLeft(5)}");
+                        Log.Info($"{c.Key,20}:{c.Value,5}");
 
                     Log.Info($"Total IDS(Temporary) blocks:".PadLeft(21) + $"{Cache.TotalTempBlocks}".PadLeft(5) + " Found");
                 }

@@ -47,7 +47,7 @@ namespace SmartMail.Cli.Commands
                     foreach (var ip in Cache.TempIpBlocks)
                     {
                         var timeRemaining = $"{TimeSpan.FromSeconds(ip.secondsLeftOnBlock):d\\:h\\:mm\\:ss}".PadLeft(16);
-                        Log.Info($"{timeRemaining} {ip.ip.PadLeft(16)}{ip.ipLocation.PadLeft(20)}{ip.protocol.ToString().PadLeft(5)} {ip.ruleDescription}");
+                        Log.Info($"{timeRemaining} {ip!.ip,16}{ip!.ipLocation,20}{ip.protocol,5} {ip.ruleDescription}");
                     }
                 }
             }

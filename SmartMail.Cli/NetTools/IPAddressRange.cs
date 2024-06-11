@@ -83,15 +83,15 @@ namespace NetTools
         // Pattern 4. Bit mask range: "192.168.0.0/255.255.255.0"
         private static readonly Regex m4_regex = new Regex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<bitmask>[\da-f\.:]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private IPAddress _Begin;
+        private IPAddress? _Begin;
 
-        public IPAddress Begin { get { return _Begin; } set { _Begin = value; _Operator = null; _prefixLength = EMPTYPREFIXLENGTH; } }
+        public IPAddress Begin { get { return _Begin!; } set { _Begin = value; _Operator = null; _prefixLength = EMPTYPREFIXLENGTH; } }
 
-        private IPAddress _End;
+        private IPAddress? _End;
 
-        public IPAddress End { get { return _End; } set { _End = value; _Operator = null; _prefixLength = EMPTYPREFIXLENGTH; } }
+        public IPAddress End { get { return _End!; } set { _End = value; _Operator = null; _prefixLength = EMPTYPREFIXLENGTH; } }
 
-        private IRangeOperator _Operator;
+        private IRangeOperator? _Operator;
 
         private IRangeOperator Operator
         {
@@ -303,7 +303,7 @@ namespace NetTools
             }
         }
 
-        public static bool TryParse(string ipRangeString, out IPAddressRange ipRange)
+        public static bool TryParse(string ipRangeString, out IPAddressRange? ipRange)
         {
             try
             {
@@ -353,12 +353,12 @@ namespace NetTools
             return Equals(Begin, End) ? Begin.ToString() : string.Format("{0}-{1}", Begin, End);
         }
 
-        public bool Equals(IPAddressRange other)
+        public bool Equals(IPAddressRange? other)
         {
             return other != null && Begin.Equals(other.Begin) && End.Equals(other.End);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;

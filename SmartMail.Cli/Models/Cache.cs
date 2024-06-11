@@ -132,7 +132,7 @@ namespace SmartMail.Cli.Models
         {
             try
             {
-                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location);
                 if (File.Exists($"{path}/ipIgnore.json"))
                 {
                     var ignores = File.ReadAllText($"{path}/ipIgnore.json");
@@ -148,7 +148,7 @@ namespace SmartMail.Cli.Models
         {
             try
             {
-                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location);
                 var ignores = JsonConvert.SerializeObject(IgnoredIps, Formatting.Indented);
                 File.WriteAllText($"{path}/ipIgnore.json", ignores);
             }
@@ -218,7 +218,7 @@ namespace SmartMail.Cli.Models
         {
             try
             {
-                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location);
                 var infoes = JsonConvert.SerializeObject(IPAddressInfos, Formatting.Indented);
                 File.WriteAllText($"{path}/ipinfo.json", infoes);
 
@@ -236,7 +236,7 @@ namespace SmartMail.Cli.Models
         {
             try
             {
-                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location);
                 if (File.Exists($"{path}/ipinfo.json"))
                 {
                     var infoes = File.ReadAllText($"{path}/ipinfo.json");
@@ -398,7 +398,7 @@ namespace SmartMail.Cli.Models
         /// <returns>A configured CIDR group</returns>
         private static BlockedIpGroup? MakeProposedGroup(List<BlockedIp> candidateIps, BlockedIp ip, List<BlockedIp> segmentIps, int segmentCount)
         {
-            BlockedIpGroup result = null;
+            BlockedIpGroup? result = null;
             var mySubnet = GetIpSubnet(ip.Ip, segmentCount);
             var existingGroup = Cache.BlockedIpGroups.Where(g => g.SubnetBase == mySubnet).FirstOrDefault();
             if (existingGroup != null)

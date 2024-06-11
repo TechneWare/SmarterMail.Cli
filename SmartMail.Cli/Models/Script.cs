@@ -192,7 +192,7 @@ namespace SmartMail.Cli.Models
         {
             try
             {
-                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location);
 
                 if (scriptHead != null && scriptHead.Any())
                     ScriptLines = [.. scriptHead, .. ScriptLines];
