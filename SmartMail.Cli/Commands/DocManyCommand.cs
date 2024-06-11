@@ -92,7 +92,7 @@ namespace SmartMail.Cli.Commands
 
                     Log.SetLogLevel(curLogLevel);
                 }
-                else if (undocumented.Count == 0 && Cache.AllBlockedIps.Count(i => !i.IsTemporary) > 0)
+                else if (undocumented.Count == 0 && Cache.AllBlockedIps.Any(i => !i.IsTemporary))
                     Log.Info("All Perma Banned IPs are documented");
                 else
                     Log.Info("Nothing to Document. Try running 'load' first.");
