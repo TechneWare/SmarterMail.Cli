@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SmartMail.Cli.Commands
@@ -9,7 +10,7 @@ namespace SmartMail.Cli.Commands
     /// <summary>
     /// The default logger for commands
     /// </summary>
-    public class CommandLogger : ICommandLogger
+    public partial class CommandLogger : ICommandLogger
     {
         private bool useTimeStamps = false;  //If true, include timestamps in the output
         private bool useLogLevel = false;    //If true, include the logging lvel in the output
@@ -55,7 +56,8 @@ namespace SmartMail.Cli.Commands
             {
                 var tStamp = useTimeStamps ? $"[{DateTime.UtcNow} UTC]" : "";
                 var lvl = useLogLevel ? level.ToString().PadRight(10) : "";
-                Console.WriteLine($"{tStamp}{lvl}: {message}");
+                var output = ReplaceUtf202WithSpaceRegex().Replace($"{tStamp}{lvl}: {message}", " ");
+                Console.WriteLine(output);
             }
         }
 
@@ -66,6 +68,7 @@ namespace SmartMail.Cli.Commands
         /// <param name="message">The message to display as a prompt</param>
         public void Prompt(string message)
         {
+            message = ReplaceUtf202WithSpaceRegex().Replace(message, " ");
             Console.Write(message);
         }
 
@@ -121,5 +124,8 @@ namespace SmartMail.Cli.Commands
             this.useLogLevel = true;
             return this;
         }
+
+        [GeneratedRegex(@"[\u202F]")]
+        private static partial Regex ReplaceUtf202WithSpaceRegex();
     }
 }
