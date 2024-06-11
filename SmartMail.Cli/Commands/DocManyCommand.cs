@@ -56,7 +56,7 @@ namespace SmartMail.Cli.Commands
             if (Globals.TryAccessVtApi())
             {
                 //make sure cache is loaded first
-                if (!Cache.IsLoaded)
+                if (!Cache.IsValid)
                 {
                     var loadCacheScript = new Script(Log, ["load"], "LoadCache");
                     loadCacheScript.Parse();

@@ -53,7 +53,7 @@ namespace SmartMail.Cli.Commands
 
                     //If we have any new IDS blocks, invalidate the cache
                     if (Cache.TotalTempBlocks > 0)
-                        Cache.IsLoaded = false;
+                        Cache.IsValid = false;
                 }
             }
             Log.Debug("---- Blocked IP Counts Done ----");

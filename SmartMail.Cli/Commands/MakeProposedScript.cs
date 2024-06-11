@@ -36,7 +36,7 @@ namespace SmartMail.Cli.Commands
 
         public void Run()
         {
-            if (!Cache.IsLoaded)
+            if (!Cache.IsValid)
             {
                 // Reset the cache
                 var curLogLevel = Log.LogLevel;

@@ -59,7 +59,7 @@ namespace SmartMail.Cli.Commands
             if (!IsConnectionOk(Globals.ApiClient))
                 return;
 
-            if (!Cache.IsLoaded)
+            if (!Cache.IsValid)
             {
                 var script = new Script(Log, ["load"], "load data");
                 script.Parse();

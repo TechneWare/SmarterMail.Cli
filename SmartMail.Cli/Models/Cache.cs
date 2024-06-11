@@ -18,7 +18,7 @@ namespace SmartMail.Cli.Models
     public static class Cache
     {
         // API Models
-        public static bool IsLoaded { get; set; } = false;
+        public static bool IsValid { get; set; } = false;
         /// <summary>
         /// Holds the results of requesting IDS block counts from the server
         /// </summary>

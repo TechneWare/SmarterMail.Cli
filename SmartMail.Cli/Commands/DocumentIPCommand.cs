@@ -92,7 +92,7 @@ namespace SmartMail.Cli.Commands
                 {
                     //make sure cache is loaded first
                     var loadCacheScript = new Script(Log, ["load"], "LoadCache");
-                    if (!Cache.IsLoaded)
+                    if (!Cache.IsValid)
                     {
                         loadCacheScript.Parse();
                         loadCacheScript.Run();

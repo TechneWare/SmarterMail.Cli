@@ -48,7 +48,7 @@ namespace SmartMail.Cli.Commands
                     "GetPermaBlockIps"
                 ]);
 
-            Cache.IsLoaded = false;
+            Cache.IsValid = false;
             getDataScript.Run();
 
             Log.Info($"Found {Cache.TempIpBlocks.Count} Temp Blocks");
@@ -84,7 +84,7 @@ namespace SmartMail.Cli.Commands
                 Log.Info($"Proposed: Leave {existingIPblocksToLeave} perma blocks and Remove {existingIPblocksToRemove} perma blocks");
                 Log.Info($"Proposed: Create {newIpBlocks} new Perma blocks");
 
-                Cache.IsLoaded = true;
+                Cache.IsValid = true;
             }
             catch (Exception ex)
             {
