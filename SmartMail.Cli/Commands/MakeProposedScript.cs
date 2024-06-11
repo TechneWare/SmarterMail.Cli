@@ -54,7 +54,8 @@ namespace SmartMail.Cli.Commands
                 var (newCidrs, removedPermaBans) = BuildCIDRs(script);
                 var moveIdsCount = MoveIdsBlocks(script);
                 var (existingIgnoredCidrCount, existingIgnoredIpsCount) = DropIgnored(script);
-                var objectChanges = newCidrs + removedPermaBans + moveIdsCount + existingIgnoredCidrCount + existingIgnoredIpsCount;
+                
+                Cache.QuedChanges = newCidrs + removedPermaBans + moveIdsCount + existingIgnoredCidrCount + existingIgnoredIpsCount;
 
                 string[] scriptHead = [
                         $"# AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [{DateTime.UtcNow} UTC]",
@@ -72,16 +73,19 @@ namespace SmartMail.Cli.Commands
                         $"setoption progress off"
                     ];
 
-                if (script.ScriptLines.Length != 0 && objectChanges > 0)
+                if (script.ScriptLines.Length != 0 && Cache.QuedChanges > 0)
                 {
                     //Since data will have changed, invalidate the cache
-                    script.Add("InvalidateCache"); 
+                    script.Add("InvalidateCache");
 
                     Log.Info($"New Blocking Script Created");
                     script.List();
                 }
                 else
-                    script.Add("Print No new IPs to analyze at this time");
+                {
+                    Log.Info("Nothing new to analyze at this time");
+                    script.Add("Print Nothing new to analyze at this time");
+                }
 
                 script.Save("commit_bans.txt", scriptHead, scriptFoot);
 

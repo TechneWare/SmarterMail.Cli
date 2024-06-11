@@ -33,14 +33,24 @@ namespace SmartMail.Cli.Commands
         public void Run()
         {
             Log.Debug("---- UpdateBlacklist ----");
+
             if (IsConnectionOk(Globals.ApiClient))
             {
-                var updateScript = new Script(Log, "UpdateBlacklist");
-                updateScript.Run("GetTempIpBlockCounts");   //If any new IDS blocks, cache will be invalid
-                updateScript.Add("make");                   //If cache is invalid, data will reload before making the script
-                updateScript.Add("run commit_bans.txt");    //Run the script that was created by 'make'
-                updateScript.Run();
+
+                var checkScript = new Script(Log, "CheckForChanges");
+                checkScript.Add("GetTempIpBlockCounts");   //If any new IDS blocks, cache will be invalid
+                checkScript.Add("make");                   //If cache is invalid, data will reload before making the script
+                checkScript.Run();
+
+                //If make qued any changes, run the commit script
+                if (Cache.QuedChanges > 0)
+                {
+                    var runScript = new Script(Log, "CommitChanges");
+                    runScript.Add("run commit_bans.txt");    //Run the script that was created by 'make'
+                    runScript.Run();
+                }
             }
+
             Log.Debug("---- UpdateBlacklist Done ----");
         }
     }

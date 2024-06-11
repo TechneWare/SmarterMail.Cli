@@ -19,6 +19,7 @@ namespace SmartMail.Cli.Models
     {
         // API Models
         public static bool IsValid { get; set; } = false;
+        public static int QuedChanges { get; set; } = 0;
         /// <summary>
         /// Holds the results of requesting IDS block counts from the server
         /// </summary>
