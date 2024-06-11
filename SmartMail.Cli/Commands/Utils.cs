@@ -9,12 +9,12 @@ namespace SmartMail.Cli.Commands
 {
     internal static class Utils
     {
-        private static ICommandLogger Log = Globals.Logger;
+        private static readonly ICommandLogger Log = Globals.Logger;
         /// <summary>
         /// Gets commands that are available to the user
         /// </summary>
         /// <returns>All command objects that are marked public</returns>
-        public static IEnumerable<ICommandFactory> GetAvailableCommands()
+        public static IEnumerable<ICommandFactory?>? GetAvailableCommands()
         {
             var type = typeof(ICommandFactory);
             var types = AppDomain.CurrentDomain.GetAssemblies()
@@ -29,14 +29,20 @@ namespace SmartMail.Cli.Commands
         /// Parses a list of commands and displays their usage
         /// </summary>
         /// <param name="availableCommands">A list of commands to process</param>
-        public static void PrintUsage(IEnumerable<ICommandFactory> availableCommands)
+        public static void PrintUsage(IEnumerable<ICommandFactory?>? availableCommands)
         {
-            Log.Prompt("\nUsage: commandName [Arguments]\n");
-            Log.Prompt("Commands:\n");
-            foreach (var command in availableCommands)
-                PrintCommandUsage(command);
+            if (availableCommands != null)
+            {
+                Log.Prompt("\nUsage: commandName [Arguments]\n");
+                Log.Prompt("Commands:\n");
+                foreach (var command in availableCommands)
+                    if (command != null)
+                        PrintCommandUsage(command);
 
-            Log.Prompt("\n");
+                Log.Prompt("\n");
+            }
+            else
+                Log.Warning("There are no commands in the system to display usage for");
         }
 
         /// <summary>
@@ -50,7 +56,7 @@ namespace SmartMail.Cli.Commands
             string ext = "";
             if (showDetails)
             {
-                if (command.CommandAlternates.Any())
+                if (command.CommandAlternates.Length != 0)
                     foreach (var altCommand in command.CommandAlternates)
                         alts += $" | {altCommand}";
 

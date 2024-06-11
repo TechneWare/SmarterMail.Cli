@@ -26,7 +26,7 @@ namespace SmartMail.Cli.Commands
         public JobKillCommand()
             : base(Globals.Logger)
         {
-
+            args = [];
         }
         public JobKillCommand(string[] args)
             : base(Globals.Logger)

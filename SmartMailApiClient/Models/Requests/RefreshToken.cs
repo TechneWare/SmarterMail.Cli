@@ -8,6 +8,6 @@ namespace SmartMailApiClient.Models.Requests
 {
     public class RefreshToken
     {
-        public string token { get; set; }
+        public string token { get; set; } = "";
     }
 }

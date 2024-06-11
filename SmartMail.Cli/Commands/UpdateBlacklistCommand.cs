@@ -36,8 +36,9 @@ namespace SmartMail.Cli.Commands
             if (IsConnectionOk(Globals.ApiClient))
             {
                 var updateScript = new Script(Log, "UpdateBlacklist");
-                updateScript.Add("make");
-                updateScript.Add("run commit_bans.txt");
+                updateScript.Run("GetTempIpBlockCounts");   //If any new IDS blocks, cache will be invalid
+                updateScript.Add("make");                   //If cache is invalid, data will reload before making the script
+                updateScript.Add("run commit_bans.txt");    //Run the script that was created by 'make'
                 updateScript.Run();
             }
             Log.Debug("---- UpdateBlacklist Done ----");

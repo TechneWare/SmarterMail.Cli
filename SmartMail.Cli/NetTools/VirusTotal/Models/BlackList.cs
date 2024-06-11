@@ -8,9 +8,9 @@ namespace SmartMail.Cli.NetTools.VirusTotal.Models
 {
     public class BlackList
     {
-        public string method {  get; set; }
-        public string engine_name { get; set; }
-        public string category { get; set; }
-        public string result { get; set; }
+        public string method { get; set; } = "";
+        public string engine_name { get; set; } = "";
+        public string category { get; set; } = "";
+        public string result { get; set; } = "";
     }
 }

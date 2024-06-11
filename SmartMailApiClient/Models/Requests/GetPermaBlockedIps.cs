@@ -8,7 +8,7 @@ namespace SmartMailApiClient.Models.Requests
 {
     public class GetPermaBlockedIps
     {
-        public SearchParams searchParams {  get; set; }
-        public bool showHoneypot {  get; set; }
+        public required SearchParams searchParams {  get; set; }
+        public bool showHoneypot { get; set; } = false;
     }
 }

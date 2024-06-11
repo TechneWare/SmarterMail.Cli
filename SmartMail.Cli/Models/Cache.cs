@@ -345,7 +345,7 @@ namespace SmartMail.Cli.Models
             var groupedIps = Cache.BlockedIpGroups.SelectMany(g => g.BlockedIps).ToList();
             var candidateIps = Cache.AllBlockedIps.Except(groupedIps).ToList();
 
-            while (candidateIps.Any())
+            while (candidateIps.Count != 0)
             {
                 var ip = candidateIps.First();
                 candidateIps.RemoveAt(0);
@@ -484,7 +484,7 @@ namespace SmartMail.Cli.Models
                 if (ip[idx] == '.')
                 {
                     found++;
-                    subnet = ip.Substring(0, idx);
+                    subnet = ip[..idx];
                 }
 
                 idx++;
@@ -497,10 +497,11 @@ namespace SmartMail.Cli.Models
         /// </summary>
         /// <param name="unixTimeStamp">Long Int value of the Unix Timestamp</param>
         /// <returns></returns>
-        public static DateTime UnixTimeToDateTimeUTC(double unixTimeStamp)
+        public static DateTime UnixTimeToDateTimeUTC(long? unixTimeStamp)
         {
+
             return new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                .AddSeconds(unixTimeStamp).ToUniversalTime();
+                .AddSeconds(unixTimeStamp ?? 0).ToUniversalTime();
         }
     }
 }

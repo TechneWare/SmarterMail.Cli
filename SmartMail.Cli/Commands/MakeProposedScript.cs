@@ -106,7 +106,7 @@ namespace SmartMail.Cli.Commands
                                                         .Where(g => ignoredCIDRs.Contains(g.IpRange))
                                                         .ToList();
 
-            if (existingIgnoredCIDRs.Any())
+            if (existingIgnoredCIDRs.Count != 0)
                 script.Add($"print === Restoring {existingIgnoredCIDRs.Count} Ignored CIDRs");
 
             foreach (var g in existingIgnoredCIDRs)
@@ -122,7 +122,7 @@ namespace SmartMail.Cli.Commands
 
             ignoredIPs.AddRange(ignoredViaCIDR);
 
-            if (ignoredIPs.Any())
+            if (ignoredIPs.Count != 0)
                 script.Add($"print === Removing {ignoredIPs.Count} Ignored IPs");
 
             foreach (var i in ignoredIPs)
@@ -158,7 +158,7 @@ namespace SmartMail.Cli.Commands
                 .Select(i => Cache.AllBlockedIps.First(c => c.Ip == i))
                 .ToList();
 
-            if (newIpBlocks.Any())
+            if (newIpBlocks.Count != 0)
                 script.Add($"print === Moving {newIpBlocks.Count} temporary IDS block(s) to the blacklist");
 
             foreach (var tb in newIpBlocks)
@@ -169,8 +169,6 @@ namespace SmartMail.Cli.Commands
                     if (script.Add($"dt {existingTempBlock.ip}"))
                     {
                         Log.Debug($"Added DeleteTemp on: {tb.Ip}");
-
-                        ResolveProtocol(tb);
 
                         if (script.Add($"pb {tb.Ip} {DateTime.UtcNow} {tb.Description}"))
                             Log.Debug($"Added PermaBan on: {tb.Ip}");
@@ -240,22 +238,6 @@ namespace SmartMail.Cli.Commands
             result.removedPermaBans = permaBansToRemove;
 
             return result;
-        }
-
-        /// <summary>
-        /// Resolve the best protocol to use in the description
-        /// </summary>
-        /// <param name="tb">A temporarily blocked IP (IDS)</param>
-        private static void ResolveProtocol(BlockedIp? tb)
-        {
-            var protocol = "UNKNOWN";
-            if (tb != null)
-            {
-                protocol = tb.Description.ToLower().Contains("smtp") || tb.Description.ToLower().Contains("harvest") ? "SMTP" : protocol;
-                protocol = tb.Description.ToLower().Contains("pop") ? "POP" : protocol;
-                protocol = tb.Description.ToLower().Contains("imap") ? "IMAP" : protocol;
-                protocol = tb.Description.ToLower().Contains("xmpp") ? "XMPP" : protocol;
-            }
         }
     }
 }

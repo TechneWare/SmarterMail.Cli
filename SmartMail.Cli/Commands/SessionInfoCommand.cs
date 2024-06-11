@@ -38,14 +38,18 @@ namespace SmartMail.Cli.Commands
                 var type = Globals.ApiClient!.Session!.GetType();
                 foreach (var prop in type.GetProperties())
                 {
-                    var val = prop.GetValue(Globals.ApiClient.Session, new object[] { });
-                    var valStr = val == null ? "" : val!.ToString();
+                    var val = prop.GetValue(Globals.ApiClient.Session, []);
+                    string? valStr = "";
+                    if (val?.GetType() == typeof(string))
+                    {
+                        valStr = val?.ToString() ?? "";
+                    }
                     sessionProps.Add(prop.Name, valStr);
                 }
 
                 foreach (var prop in sessionProps)
                 {
-                    Log.Info($"{prop.Key.PadLeft(15)}:{prop.Value.PadLeft(20)}");
+                    Log.Info($"{prop.Key,15}:{prop.Value,20}");
                 }
             }
             else

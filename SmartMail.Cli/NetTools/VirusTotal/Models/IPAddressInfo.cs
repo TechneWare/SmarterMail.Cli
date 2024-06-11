@@ -30,7 +30,7 @@ namespace SmartMail.Cli.NetTools.VirusTotal.Models
 
             if (hasData)
                 //Set the description using the Virus Total data - USing key:value format to allow parsing
-                description = $"TS:{LastQuery} SN:{attributes!.network} ASN:{attributes.asn} P:{protocol} CTY:{attributes.country} Score:{attributes.last_analysis_stats.Score:F3}";
+                description = $"TS:{LastQuery} SN:{attributes!.network} ASN:{attributes.asn} P:{protocol} CTY:{attributes.country} Score:{attributes.last_analysis_stats?.Score:F3}";
             else
             {
                 //Otherwise, (we might have overrun the quota at Virus Total) use a limited description that can be used next time Virus Total is working

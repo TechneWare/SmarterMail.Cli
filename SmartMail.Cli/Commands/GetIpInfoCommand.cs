@@ -52,10 +52,10 @@ namespace SmartMail.Cli.Commands
                 if (ipInfo != null)
                 {
                     Log.Info($"IP Info For: {ipInfo.id}");
-                    Log.Info($"Score:{ipInfo!.attributes!.last_analysis_stats.Score}");
+                    Log.Info($"Score:{ipInfo.attributes?.last_analysis_stats?.Score ?? 0}");
                     Log.Info($"Last ApiQuery:{ipInfo.LastQuery} UTC");
-                    Log.Info($"Last Analysis:{Cache.UnixTimeToDateTimeUTC(ipInfo.attributes.last_analysis_date)} UTC");
-                    Log.Info($"Last Modified:{Cache.UnixTimeToDateTimeUTC(ipInfo.attributes.last_modification_date)} UTC");
+                    Log.Info($"Last Analysis:{Cache.UnixTimeToDateTimeUTC(ipInfo.attributes?.last_analysis_date)} UTC");
+                    Log.Info($"Last Modified:{Cache.UnixTimeToDateTimeUTC(ipInfo.attributes?.last_modification_date)} UTC");
                 }
                 else
                     Log.Info("No IP Info Returned");

@@ -9,7 +9,7 @@ namespace SmartMailApiClient.Models.Requests
 {
     public class DeleteTempBlockedIp
     {
-        public IpTempBlock[] ipBlocks {  get; set; }
+        public IpTempBlock[] ipBlocks { get; set; } = [];
 
     }
 }

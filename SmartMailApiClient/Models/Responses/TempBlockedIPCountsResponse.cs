@@ -8,8 +8,8 @@ namespace SmartMailApiClient.Models.Responses
 {
     public class TempBlockedIPCountsResponse: IResponse
     {
-        public Dictionary<string, int> counts {  get; set; }
-        public string message { get; set; }
+        public Dictionary<string, int>? counts {  get; set; }
+        public string message { get; set; } = "";
         
         public bool success { get; set; }
 

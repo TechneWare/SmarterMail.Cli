@@ -48,7 +48,7 @@ namespace SmartMail.Cli.Commands
                 return new RestoreCommand();
             else if (args.Length == 2)
                 return new RestoreCommand(args[1], false);
-            else if (args.Length == 3 && args[2].ToLower() == "force")
+            else if (args.Length == 3 && args[2].Equals("force", StringComparison.CurrentCultureIgnoreCase))
                 return new RestoreCommand(args[1], true);
             else
                 return new BadCommand($"Unable to understand: {string.Join(" ", args)}");
@@ -83,7 +83,7 @@ namespace SmartMail.Cli.Commands
 
             if (!isSelectAll)
                 ipInfoes = Cache.IPAddressInfos
-                    .Where(i => i.id.StartsWith(ipStartsWithString))
+                    .Where(i => !string.IsNullOrEmpty(i.id) && i.id.StartsWith(ipStartsWithString))
                     .ToList();
 
             var existingIps = Cache.PermaIpBlocks
@@ -99,11 +99,11 @@ namespace SmartMail.Cli.Commands
 
             //find all Virus Total data where the IP is not already in the block list
             var cidrIps = Cache.IPAddressInfos
-                .Where(i => ipGroups.Any(g => i.id.StartsWith(g.SubnetBase)))
+                .Where(i => ipGroups.Any(g => i.id?.StartsWith(g.SubnetBase) ?? false))
                 .ToList();
 
             var ipsToRestore = ipInfoes
-                .Where(i => !existingIps.Contains(i.id))
+                .Where(i => !string.IsNullOrEmpty(i.id) && !existingIps.Contains(i.id))
                 .ToList();
             ipsToRestore.AddRange(cidrIps);
 
@@ -128,19 +128,19 @@ namespace SmartMail.Cli.Commands
             var okToRun = !Globals.IsInteractiveMode || force;
             if (!okToRun)
             {
-                if (restoreScript.ScriptLines.Any())
+                if (restoreScript.ScriptLines.Length != 0)
                 {
                     string userResponse = Utils.InputPrompt("Y", "Proceed with Restore? Y/N:").Trim();
 
                     okToRun = !string.IsNullOrEmpty(userResponse)
                               && userResponse.Length > 0
-                              && userResponse.Substring(0, 1).ToLower() == "y";
+                              && userResponse[..1].Equals("y", StringComparison.CurrentCultureIgnoreCase);
                 }
                 else
                     Log.Info($"Everything matching '{ipStartsWithString}' is already restored");
             }
 
-            if (ipsToRestore.Any())
+            if (ipsToRestore.Count != 0)
                 restoreScript.Add("InvalidateCache");
 
             if (okToRun)
@@ -167,10 +167,10 @@ namespace SmartMail.Cli.Commands
 
             if (ipCached != null)
             {
-                protocol = ipCached.description.ToLower().Contains("smtp") || ipCached.description.ToLower().Contains("harvest") ? "SMTP" : protocol;
-                protocol = ipCached.description.ToLower().Contains("pop") ? "POP" : protocol;
-                protocol = ipCached.description.ToLower().Contains("imap") ? "IMAP" : protocol;
-                protocol = ipCached.description.ToLower().Contains("xmpp") ? "XMPP" : protocol;
+                protocol = ipCached.description.Contains("smtp", StringComparison.OrdinalIgnoreCase) || ipCached.description.Contains("harvest", StringComparison.OrdinalIgnoreCase) ? "SMTP" : protocol;
+                protocol = ipCached.description.Contains("pop", StringComparison.OrdinalIgnoreCase) ? "POP" : protocol;
+                protocol = ipCached.description.Contains("imap", StringComparison.OrdinalIgnoreCase) ? "IMAP" : protocol;
+                protocol = ipCached.description.Contains("xmpp", StringComparison.OrdinalIgnoreCase) ? "XMPP" : protocol;
             }
 
             return protocol;

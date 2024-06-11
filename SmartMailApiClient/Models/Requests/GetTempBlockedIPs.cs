@@ -8,11 +8,11 @@ namespace SmartMailApiClient.Models.Requests
 {
     public class GetTempBlockedIPs
     {
-        public ServiceType[] serviceTypes { get; set; }
-        public string search { get; set; }
-        public IpBlockInfoSortType sortType { get; set; }
-        public bool ascending { get; set; }
-        public int startindex { get; set; }
-        public int count { get; set; }
+        public ServiceType[] serviceTypes { get; set; } = [ServiceType.Smtp];
+        public string search { get; set; } = "";
+        public IpBlockInfoSortType sortType { get; set; } = IpBlockInfoSortType.ip;
+        public bool ascending { get; set; } = false;
+        public int startindex { get; set; } = 0;
+        public int count { get; set; } = 100;
     }
 }

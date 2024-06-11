@@ -12,13 +12,13 @@ namespace SmartMail.Cli.Commands
     /// </summary>
     internal class CommandParser
     {
-        private readonly IEnumerable<ICommandFactory> commands;      //The commands this parser knows about
+        private readonly IEnumerable<ICommandFactory?>? commands;      //The commands this parser knows about
 
         /// <summary>
         /// Initilizes the parser with a list of commands
         /// </summary>
         /// <param name="commands">The commands this parser will use</param>
-        public CommandParser(IEnumerable<ICommandFactory> commands)
+        public CommandParser(IEnumerable<ICommandFactory?>? commands)
         {
             this.commands = commands;
         }
@@ -57,11 +57,11 @@ namespace SmartMail.Cli.Commands
 
             //Match if the request matches any alternate in full
             //Otherwise look for commands with a name that starts with the request
-            var matched = commands.Where(c => c.CommandAlternates.Any(ca => ca.Equals(requestedCommand, StringComparison.CurrentCultureIgnoreCase)));
-            if (!matched.Any())
-                matched = commands.Where(c => c.CommandName.StartsWith(requestedCommand, StringComparison.CurrentCultureIgnoreCase));
+            var matched = commands?.Where(c => c != null && c.CommandAlternates.Any(ca => ca.Equals(requestedCommand, StringComparison.CurrentCultureIgnoreCase)));
+            if (matched != null && !matched.Any())
+                matched = commands?.Where(c => c != null && c.CommandName.StartsWith(requestedCommand, StringComparison.CurrentCultureIgnoreCase));
 
-            if (matched.Any())
+            if (matched?.Any() ?? false)
             {
                 if (matched.Count() == 1)
                     cmd = matched.First();  //Only one match, so its safe to use it
@@ -70,14 +70,14 @@ namespace SmartMail.Cli.Commands
                     //More than one match so return a bad command to indicate multiple matches
                     var msg = "Please Be More Specific." +
                               "\nDid you mean one of these?";
-                    foreach (var c in matched)
-                        msg += $"\n{c.CommandName.PadRight(25)}-{c.Description}";
+                    foreach (var c in matched.Where(m => m != null))
+                        msg += $"\n{c!.CommandName,-25}-{c.Description}";
 
                     cmd = new BadCommand(msg);
                 }
             }
 
-            return cmd;
+            return cmd ?? new NotFoundCommand();
         }
     }
 }

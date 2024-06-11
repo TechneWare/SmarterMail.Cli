@@ -26,7 +26,7 @@ namespace SmartMail.Cli.Commands
         public DeleteTempBlockedIpCommand()
             : base(Globals.Logger)
         {
-
+            ipAddress = "";
         }
 
         public DeleteTempBlockedIpCommand(string IpAddress)

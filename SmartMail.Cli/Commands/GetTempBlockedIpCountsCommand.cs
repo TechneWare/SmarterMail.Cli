@@ -44,11 +44,16 @@ namespace SmartMail.Cli.Commands
 
                 if (IsResponseOk(r))
                 {
-                    Cache.TempBlockCounts = r!.counts;
-                    foreach (var c in Cache.TempBlockCounts)
+                    Cache.TempBlockCounts = r!.counts ?? [];
+
+                    foreach (var c in Cache.TempBlockCounts.Where(c => c.Value > 0))
                         Log.Info($"{c.Key,20}:{c.Value,5}");
 
                     Log.Info($"Total IDS(Temporary) blocks:".PadLeft(21) + $"{Cache.TotalTempBlocks}".PadLeft(5) + " Found");
+
+                    //If we have any new IDS blocks, invalidate the cache
+                    if (Cache.TotalTempBlocks > 0)
+                        Cache.IsLoaded = false;
                 }
             }
             Log.Debug("---- Blocked IP Counts Done ----");

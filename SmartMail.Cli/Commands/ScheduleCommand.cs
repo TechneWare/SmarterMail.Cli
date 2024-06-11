@@ -27,7 +27,7 @@ namespace SmartMail.Cli.Commands
         public ScheduleCommand()
             : base(Globals.Logger)
         {
-
+            args = [];
         }
         public ScheduleCommand(string[] args)
             : base(Globals.Logger)

@@ -64,24 +64,24 @@ namespace NetTools
     [Serializable]
     public class IPAddressRange : ISerializable, IEnumerable<IPAddress>, IReadOnlyDictionary<string, string>, IEquatable<IPAddressRange>
 #else
-    public class IPAddressRange : IEnumerable<IPAddress>, IReadOnlyDictionary<string, string>, IEquatable<IPAddressRange>
+    public partial class IPAddressRange : IEnumerable<IPAddress>, IReadOnlyDictionary<string, string>, IEquatable<IPAddressRange>
 #endif
     {
         // constant that meaning prefix length hasn't computed yet
         private const int EMPTYPREFIXLENGTH = -1;
 
         // Pattern 1. CIDR range: "192.168.0.0/24", "fe80::%lo0/10"
-        private static readonly Regex m1_regex = new Regex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<maskLen>\d+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex m1_regex = m1Regex();
 
         // Pattern 2. Uni address: "127.0.0.1", "::1%eth0"
-        private static readonly Regex m2_regex = new Regex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex m2_regex = m2Regex();
 
         // Pattern 3. Begin end range: "169.254.0.0-169.254.0.255", "fe80::1%23-fe80::ff%23"
         //            also shortcut notation: "192.168.1.1-7" (IPv4 only)
-        private static readonly Regex m3_regex = new Regex(@"^(?<begin>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*[\-–][ \t]*(?<end>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex m3_regex = m3Regex();
 
         // Pattern 4. Bit mask range: "192.168.0.0/255.255.255.0"
-        private static readonly Regex m4_regex = new Regex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<bitmask>[\da-f\.:]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex m4_regex = m4Regex();
 
         private IPAddress? _Begin;
 
@@ -97,7 +97,7 @@ namespace NetTools
         {
             get
             {
-                if (_Operator == null) _Operator = RangeOperatorFactory.Create(this);
+                _Operator ??= RangeOperatorFactory.Create(this);
                 return _Operator;
             }
         }
@@ -117,8 +117,7 @@ namespace NetTools
         /// <param name="singleAddress"></param>
         public IPAddressRange(IPAddress singleAddress)
         {
-            if (singleAddress == null)
-                throw new ArgumentNullException(nameof(singleAddress));
+            ArgumentNullException.ThrowIfNull(singleAddress);
 
             Begin = End = singleAddress;
         }
@@ -130,11 +129,8 @@ namespace NetTools
         /// </summary>
         public IPAddressRange(IPAddress begin, IPAddress end)
         {
-            if (begin == null)
-                throw new ArgumentNullException(nameof(begin));
-
-            if (end == null)
-                throw new ArgumentNullException(nameof(end));
+            ArgumentNullException.ThrowIfNull(begin);
+            ArgumentNullException.ThrowIfNull(end);
 
             var beginBytes = begin.GetAddressBytes();
             var endBytes = end.GetAddressBytes();
@@ -155,8 +151,7 @@ namespace NetTools
         /// <param name="maskLength"></param>
         public IPAddressRange(IPAddress baseAddress, int maskLength)
         {
-            if (baseAddress == null)
-                throw new ArgumentNullException(nameof(baseAddress));
+            ArgumentNullException.ThrowIfNull(baseAddress);
 
             var baseAdrBytes = baseAddress.GetAddressBytes();
             if (baseAdrBytes.Length * 8 < maskLength) throw new FormatException();
@@ -200,7 +195,7 @@ namespace NetTools
 
         public bool Contains(IPAddress ipaddress)
         {
-            if (ipaddress == null) throw new ArgumentNullException(nameof(ipaddress));
+            ArgumentNullException.ThrowIfNull(ipaddress);
 
             var rangeOperator = this.Operator;
             if (ipaddress.AddressFamily != this.Begin.AddressFamily) return false;
@@ -209,7 +204,7 @@ namespace NetTools
 
         public bool Contains(IPAddressRange range)
         {
-            if (range == null) throw new ArgumentNullException(nameof(range));
+            ArgumentNullException.ThrowIfNull(range);
 
             var rangeOperator = this.Operator;
             if (this.Begin.AddressFamily != range.Begin.AddressFamily) return false;
@@ -218,13 +213,13 @@ namespace NetTools
 
         public static IPAddressRange Parse(string ipRangeString)
         {
-            if (ipRangeString == null) throw new ArgumentNullException(nameof(ipRangeString));
+            ArgumentNullException.ThrowIfNull(ipRangeString);
 
             // trim white spaces.
             ipRangeString = ipRangeString.Trim();
 
             // define local funtion to strip scope id in ip address string.
-            string stripScopeId(string ipaddressString) => ipaddressString.Split('%')[0];
+            static string stripScopeId(string ipaddressString) => ipaddressString.Split('%')[0];
 
             // Pattern 1. CIDR range: "192.168.0.0/24", "fe80::/10%eth0"
             var m1 = m1_regex.Match(ipRangeString);
@@ -257,7 +252,7 @@ namespace NetTools
                 {
                     if (end.Contains('%')) throw new FormatException("The end of IPv4 range shortcut notation contains scope id.");
                     var lastDotAt = begin.LastIndexOf('.');
-                    end = begin.Substring(0, lastDotAt + 1) + end;
+                    end = begin[..(lastDotAt + 1)] + end;
                 }
 
                 return new IPAddressRange(
@@ -325,12 +320,10 @@ namespace NetTools
         /// <returns></returns>
         public static int SubnetMaskLength(IPAddress subnetMask)
         {
-            if (subnetMask == null)
-                throw new ArgumentNullException(nameof(subnetMask));
+            ArgumentNullException.ThrowIfNull(subnetMask);
 
             var length = Bits.GetBitMaskLength(subnetMask.GetAddressBytes());
-            if (length == null) throw new ArgumentException("Not a valid subnet mask", "subnetMask");
-            return length.Value;
+            return length == null ? throw new ArgumentException("Not a valid subnet mask", nameof(subnetMask)) : length.Value;
         }
 
         public IEnumerator<IPAddress> GetEnumerator()
@@ -369,13 +362,10 @@ namespace NetTools
 
         public override int GetHashCode()
         {
-            var hashCode = 1903003160;
-            hashCode = hashCode * -1521134295 + EqualityComparer<IPAddress>.Default.GetHashCode(Begin);
-            hashCode = hashCode * -1521134295 + EqualityComparer<IPAddress>.Default.GetHashCode(End);
-            return hashCode;
+            return HashCode.Combine(Begin, End);
         }
 
-        private int getPrefixLength()
+        private int GetCidrPrefixLength()
         {
             var byteBegin = Begin.GetAddressBytes();
 
@@ -402,7 +392,7 @@ namespace NetTools
         {
             if (_prefixLength == EMPTYPREFIXLENGTH)
             {
-                _prefixLength = getPrefixLength();
+                _prefixLength = GetCidrPrefixLength();
             }
             return _prefixLength;
         }
@@ -431,17 +421,17 @@ namespace NetTools
 
         private IEnumerable<KeyValuePair<string, string>> GetDictionaryItems()
         {
-            return new[] {
+            return [
                 new KeyValuePair<string,string>(nameof(Begin), Begin.ToString()),
                 new KeyValuePair<string,string>(nameof(End), End.ToString()),
-            };
+            ];
         }
 
         private bool TryGetValue(string key, out string value) => TryGetValue(GetDictionaryItems(), key, out value);
 
         private bool TryGetValue(IEnumerable<KeyValuePair<string, string>> items, string key, out string value)
         {
-            items = items ?? GetDictionaryItems();
+            items ??= GetDictionaryItems();
             var foundItem = items.FirstOrDefault(item => item.Key == key);
             value = foundItem.Value;
             return foundItem.Key != null;
@@ -460,6 +450,14 @@ namespace NetTools
         bool IReadOnlyDictionary<string, string>.TryGetValue(string key, out string value) => TryGetValue(key, out value);
 
         IEnumerator<KeyValuePair<string, string>> IEnumerable<KeyValuePair<string, string>>.GetEnumerator() => GetDictionaryItems().GetEnumerator();
+        [GeneratedRegex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<bitmask>[\da-f\.:]+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+        private static partial Regex m4Regex();
+        [GeneratedRegex(@"^(?<begin>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*[\-–][ \t]*(?<end>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+        private static partial Regex m3Regex();
+        [GeneratedRegex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+        private static partial Regex m2Regex();
+        [GeneratedRegex(@"^(?<adr>([\d.]+)|([\da-f:]+(:[\d.]+)?(%\w+)?))[ \t]*/[ \t]*(?<maskLen>\d+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+        private static partial Regex m1Regex();
 
         #endregion
     }

@@ -15,8 +15,8 @@ namespace SmartMail.Cli.Models
     public class Script
     {
         private readonly ICommandLogger Log;
-        private IEnumerable<ICommandFactory> availableCommands;
-        private CommandParser parser;
+        private readonly IEnumerable<ICommandFactory?>? availableCommands;
+        private readonly CommandParser parser;
         /// <summary>
         /// Script Name
         /// </summary>
@@ -115,9 +115,9 @@ namespace SmartMail.Cli.Models
         /// <returns>True if the script is valid</returns>
         public bool Parse()
         {
-            var isScriptValid = false;
             Commands = [];
 
+            bool isScriptValid;
             try
             {
                 //load the script
@@ -194,10 +194,10 @@ namespace SmartMail.Cli.Models
             {
                 var path = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location);
 
-                if (scriptHead != null && scriptHead.Any())
+                if (scriptHead != null && scriptHead.Length != 0)
                     ScriptLines = [.. scriptHead, .. ScriptLines];
 
-                if (scriptFooter != null && scriptFooter.Any())
+                if (scriptFooter != null && scriptFooter.Length != 0)
                     ScriptLines = [.. ScriptLines, .. scriptFooter];
 
 
@@ -246,7 +246,7 @@ namespace SmartMail.Cli.Models
         /// </summary>
         /// <param name="scriptLines">The script lines to clean</param>
         /// <returns>A cleaned list of script lines</returns>
-        private string[] CleanScript(string[]? scriptLines)
+        private static string[] CleanScript(string[]? scriptLines)
         {
             scriptLines ??= [];
             scriptLines = scriptLines
@@ -264,8 +264,7 @@ namespace SmartMail.Cli.Models
         /// <returns>True if the command is valid</returns>
         private bool IsCommandValid(ICommand command, string[] scriptLines, string line)
         {
-            var result = false;
-
+            bool result;
             if (command != null)
             {
                 result = true;

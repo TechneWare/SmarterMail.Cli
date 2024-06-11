@@ -26,7 +26,10 @@ namespace SmartMail.Cli.Commands
 
         public LoginCommand()
             : base(Globals.Logger)
-        { }
+        {
+            userName = "";
+            password = "";
+        }
 
         public LoginCommand(string userName, string password)
             : base(Globals.Logger)
@@ -81,8 +84,7 @@ namespace SmartMail.Cli.Commands
                     Globals.UpdateResetInterval();
 
                     //Start over if they log in again
-                    if (Globals.RefreshTimer != null)
-                        Globals.RefreshTimer.Dispose();
+                    Globals.RefreshTimer?.Dispose();
 
                     var refreshTimespan = TimeSpan.FromSeconds(Globals.TokenRefreshSeconds);
                     Globals.RefreshTimer = new Timer((object? stateInfo) =>

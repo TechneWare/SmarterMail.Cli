@@ -13,7 +13,7 @@ namespace SmartMail.Cli.Commands
     /// </summary>
     public class GetPermaBlockedIpsCommand : CommandBase, ICommand, ICommandFactory
     {
-        private bool showOutput { get; set; } = false;
+        private bool ShowOutput { get; set; } = false;
         public string CommandName => "GetPermaBlockIps";
 
         public string CommandArgs => "show";
@@ -34,9 +34,9 @@ namespace SmartMail.Cli.Commands
             : base(Globals.Logger)
         {
             IsThreadSafe = false;
-            showOutput = false;
-            if (args.Length >= 2 && args[1].ToLower() == "show")
-                showOutput = true;
+            ShowOutput = false;
+            if (args.Length >= 2 && args[1].Equals("show", StringComparison.OrdinalIgnoreCase))
+                ShowOutput = true;
         }
 
         public ICommand MakeCommand(string[] args)
@@ -58,14 +58,14 @@ namespace SmartMail.Cli.Commands
                 {
                     Cache.PermaIpBlocks = [.. r!.ipAccessList];
                     Log.Info($"Total Perma Blocks: {Cache.PermaIpBlocks.Count}");
-                    if (showOutput)
+                    if (ShowOutput)
                     {
                         foreach (var ip in Cache.PermaIpBlocks)
                         {
                             if (Log.LogLevel == ICommandLogger.LogLevelType.Debug)
-                                Log.Info($"{ip.ip.PadRight(16)} smtp:{ip.smtp.ToString().PadRight(6)} pop:{ip.pop.ToString().PadRight(6)} imap:{ip.imap.ToString().PadRight(6)} xmpp:{ip.xmpp.ToString().PadRight(6)} => {ip.description}");
+                                Log.Info($"{ip.ip,-16} smtp:{ip.smtp,-6} pop:{ip.pop,-6} imap:{ip.imap,-6} xmpp:{ip.xmpp,-6} => {ip.description}");
                             else
-                                Log.Info($"{ip.ip.PadRight(16)} => {ip.description}");
+                                Log.Info($"{ip.ip,-16} => {ip.description}");
                         }
 
                         Log.Info("");
