@@ -1,6 +1,7 @@
 ﻿using SmartMail.Cli;
 using SmartMail.Cli.Commands;
 using SmartMail.Cli.Models;
+using System.Text;
 
 internal class Program
 {
@@ -10,6 +11,7 @@ internal class Program
     /// <param name="args">Optional commandline args</param>
     private static void Main(string[] args)
     {
+        Console.OutputEncoding = Encoding.UTF8;
 
         if (Globals.Settings.UseAutoLogin)
         {
