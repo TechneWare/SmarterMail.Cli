@@ -98,8 +98,8 @@ namespace SmartMail.Cli.Commands
                             if (logFiles.Length > 0)
                                 File.Delete(logFiles.First());
 
-                            logFiles = [.. Directory.GetFiles(Settings.path, "SmarterMail.Cli*.log")
-                                            .Where(f => f != "SmarterMail.Cli.log")
+                            logFiles = [.. Directory.GetFiles(Settings.path, "SmartMail.Cli*.log")
+                                            .Where(f => f != "SmartMail.Cli.log")
                                             .OrderBy(f => f)];
 
                         } while (logFiles.Length > Globals.Settings.MaxLogFiles);

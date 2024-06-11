@@ -9,8 +9,8 @@ namespace SmartMail.Cli
     {
         private static readonly string configFile;
         public static readonly string path;
-        public static string LogFileName => $"{path}/SmarterMail.Cli.log";
-        public static string LogFileNameTimeStamped => $"{path}/SmarterMail.Cli_{DateTime.UtcNow:yyyyMMddHHmmss}.log";
+        public static string LogFileName => $"{path}/SmartMail.Cli.log";
+        public static string LogFileNameTimeStamped => $"{path}/SmartMail.Cli_{DateTime.UtcNow:yyyyMMddHHmmss}.log";
         public bool UseFileLogging { get; set;} = false;
         public ICommandLogger.LogLevelType LoggingLevel { get; set; } = ICommandLogger.LogLevelType.Info;
         public int MaxLogSizeKB { get; set; } = 1024; //Default 1Meg
