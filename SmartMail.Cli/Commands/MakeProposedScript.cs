@@ -185,6 +185,9 @@ namespace SmartMail.Cli.Commands
         private (int newCidrs, int removedPermaBans) BuildCIDRs(Script script)
         {
             Log.Debug("Setting up CIDR groups");
+
+            var isUsingVirusTotal = !string.IsNullOrEmpty(Globals.Settings.VirusTotalApiKey);
+
             var ignoredCIDRs = Cache.IgnoredIps
                     .Where(i => i.IsSubnet)
                     .Select(i => IPAddressRange.Parse(i.Ip))
@@ -203,8 +206,9 @@ namespace SmartMail.Cli.Commands
 
             foreach (var grp in Cache.ProposedIpGroups.Where(g => !ignoredCIDRs.Contains(g.IpRange)))
             {
-                if (!grp.IsDocumented)
+                if (isUsingVirusTotal && !grp.IsDocumented)
                 {
+                    //Wait for documentation if Virus Total is being used
                     Log.Info($"CIDR {grp.Subnet} skipped because it has {grp.UndocumentedCount} undocumented IPs");
                     script.Add($"Print CIDR {grp.Subnet} skipped because it has {grp.UndocumentedCount} undocumented IPs");
                     continue;
@@ -214,7 +218,7 @@ namespace SmartMail.Cli.Commands
                 var description = $"{DateTime.UtcNow}| IPs[{grp.BlockedIps.Count}] %Abuse[{grp.PercentAbuse:P}]";
 
                 //Using the Virus Total api, so include the score
-                if (!string.IsNullOrEmpty(Globals.Settings.VirusTotalApiKey))
+                if (isUsingVirusTotal)
                     description = $"{DateTime.UtcNow}| IPs[{grp.BlockedIps.Count}] AvgScore[{grp.AvgScore:F3}] %Abuse[{grp.PercentAbuse:P}]";
 
                 if (script.Add($"pb {grp.Subnet} {description}"))  //Perma ban the CIDR with a limited description
