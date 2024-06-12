@@ -52,11 +52,20 @@ namespace SmartMail.Cli.Commands
             if (IsConnectionOk(Globals.ApiClient))
             {
                 Log.Debug("--- Get Perma Blocked IPs ---");
-                var r = Globals.ApiClient?.GetPermaBlockedIPs().ConfigureAwait(false).GetAwaiter().GetResult();
+
+                int pageSize = 1000;
+                int skip = 0;
+                var r = Globals.ApiClient?.GetPermaBlockedIPs(pageSize, skip).ConfigureAwait(false).GetAwaiter().GetResult();
+                while (IsResponseOk(r) && r!.ipAccessList!.Length == pageSize)
+                {
+                    Cache.PermaIpBlocks.AddRange(r.ipAccessList);
+                    skip += pageSize;
+                    r = Globals.ApiClient?.GetPermaBlockedIPs(pageSize, skip).ConfigureAwait(false).GetAwaiter().GetResult();
+                }
 
                 if (IsResponseOk(r))
                 {
-                    Cache.PermaIpBlocks = [.. r!.ipAccessList];
+                    Cache.PermaIpBlocks.AddRange(r!.ipAccessList!);
                     Log.Info($"Total Perma Blocks: {Cache.PermaIpBlocks.Count}");
                     if (ShowOutput)
                     {

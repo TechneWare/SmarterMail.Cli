@@ -162,7 +162,7 @@ namespace SmartMailApiClient
             return response;
         }
 
-        public async Task<PermaBlockedIpsResponse> GetPermaBlockedIPs()
+        public async Task<PermaBlockedIpsResponse> GetPermaBlockedIPs(int pageSize, int skip)
         {
             string apiPath = "/api/v1/settings/sysadmin/ip-access/false";
             var request = new Models.Requests.GetPermaBlockedIps()
@@ -170,8 +170,8 @@ namespace SmartMailApiClient
                showHoneypot = false,
                searchParams = new Models.Requests.SearchParams()
                {
-                   skip = 0,
-                   take = 5000,
+                   skip = skip,
+                   take = pageSize,
                    search = "",
                    sortField = "ip",
                    sortDescending = false
