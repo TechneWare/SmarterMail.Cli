@@ -79,9 +79,11 @@ namespace SmartMail.Cli.Models
         /// <param name="permaBlockedIps">Permanent Black List blocks</param>
         public static void Init(List<IpTempBlock> tempBlockedIPs, List<IpAccess> permaBlockedIps)
         {
+            Globals.Logger.Debug("-- Start Init Cache --");
             Clear();
 
             //Load the AllBlockedIps list
+            Globals.Logger.Debug("--> Load IDS to All Blocked IPs");
             foreach (var b in tempBlockedIPs)
             {
                 Cache.AllBlockedIps.Add(new BlockedIp()
@@ -93,6 +95,7 @@ namespace SmartMail.Cli.Models
                 });
             }
 
+            Globals.Logger.Debug("--> Load perma to All Blocked IPs");
             //Load CIDR groups
             foreach (var b in permaBlockedIps)
             {
@@ -128,6 +131,8 @@ namespace SmartMail.Cli.Models
                 BuildIpGroups();
                 BuildProposedIpGroups();
             }
+
+            Globals.Logger.Debug("-- Done Init Cache --");
         }
         public static void LoadIgnoreIps()
         {
@@ -257,6 +262,7 @@ namespace SmartMail.Cli.Models
         /// </summary>
         private static void BuildIpGroupsViaApi()
         {
+            Globals.Logger.Debug("--> Build IP Groups via API started");
             foreach (var g in Cache.BlockedIpGroups)
             {
                 //Make a range cacluator for this subnet
@@ -269,24 +275,27 @@ namespace SmartMail.Cli.Models
                 foreach (var ip in groupableIps)
                     g.BlockedIps.Add(ip);
             }
+            Globals.Logger.Debug("--> Build IP Groups via API ended");
         }
         /// <summary>
         /// Builds the list of proposed CIDR groups using Virus Total Data
         /// </summary>
         private static void BuildProposedIpGroupsViaApi()
         {
+            Globals.Logger.Debug("--> Build Proposed IP Groups via API started");
             //Find all IPs that are currently in a group
             var groupedIps = Cache.BlockedIpGroups
                 .SelectMany(g => g.BlockedIps)
                 .ToList();
-
             //Find all IPs that are candidates to be in a group
+            Globals.Logger.Debug("----> Get Candidates");
             var candidateIps = Cache.AllBlockedIps
                 .Except(groupedIps)
                 .ToList();
 
             //Make a list of CIDR groups from any known IPs that have Virus Total Data on them
             //By selecting a distinct list of subnets
+            Globals.Logger.Debug("----> Get Distinct Subnets");
             var allSubnets = Cache.AllBlockedIps
                 .Where(i => i.IsDocumented)
                 .Select(i => i.Subnet)
@@ -295,6 +304,7 @@ namespace SmartMail.Cli.Models
                 .ToList();
 
             //For each candidate IP
+            Globals.Logger.Debug("----> Add Candidates to Groups");
             while (candidateIps.Count != 0)
             {
                 //Remove it from the candidates
@@ -304,6 +314,7 @@ namespace SmartMail.Cli.Models
                 //Find any CIDR groups that it should belong to
                 var groupsForIp = allSubnets
                     .Where(n => n.IpRange.Contains(IPAddress.Parse(ip.Ip)))
+                    .AsParallel()
                     .ToList();
 
                 //For each group found, add the IP to it
@@ -312,8 +323,10 @@ namespace SmartMail.Cli.Models
             }
 
             //Set the list of proposed CIDR groups, where the group has IPs in it and that abuses more than the trigger amount
+            Globals.Logger.Debug("----> Set Final Groups");
             var proposedGroups = allSubnets
                 .Where(g => g.BlockedIps.Count > 1 && g.PercentAbuse > Globals.Settings.PercentAbuseTrigger)
+                .AsParallel()
                 .ToList();
 
             //EG: If there are 254 useable addresses in the subnet and 3 IPs have been found to be abusive
@@ -321,8 +334,8 @@ namespace SmartMail.Cli.Models
             //The goal here is to scale up the minimum count of of abusive IPs found by the size of the CIDR range
             //before allowing a CIDR block to be generated on the server.
             //So CIDR/24 requires 3 IPs and CIDR/16 requires 651 IPs found before a block is generated
-
             Cache.ProposedIpGroups.AddRange(proposedGroups);
+            Globals.Logger.Debug("--> Build Proposed IP Groups via API ended");
         }
         /// <summary>
         /// Build the list of CIDR groups that are currently in the SmarterMail black list

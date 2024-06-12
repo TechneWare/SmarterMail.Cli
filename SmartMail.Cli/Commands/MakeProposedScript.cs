@@ -40,7 +40,8 @@ namespace SmartMail.Cli.Commands
             {
                 // Reset the cache
                 var curLogLevel = Log.LogLevel;
-                Log.SetLogLevel(ICommandLogger.LogLevelType.Warning);
+                if (curLogLevel != ICommandLogger.LogLevelType.Debug)
+                    Log.SetLogLevel(ICommandLogger.LogLevelType.Warning);
                 var loadData = new LoadBlockedIpDataCommand().MakeCommand([]);
                 loadData.Run();
                 Log.SetLogLevel(curLogLevel);
@@ -142,6 +143,8 @@ namespace SmartMail.Cli.Commands
             result.existingIgnoredCidrCount = existingIgnoredCIDRs.Count;
             result.existingIgnoredIpsCount = ignoredIPs.Count;
 
+            Log.Debug("Dropping Ignored Done");
+
             return result;
         }
 
@@ -178,6 +181,7 @@ namespace SmartMail.Cli.Commands
                 else
                     Log.Warning($"Unable to Locate existing temp block on {tb.Ip}, so skipped it");
             }
+            Log.Debug("Setting up individual bans done");
 
             return newIpBlocks.Count;
         }
@@ -248,6 +252,8 @@ namespace SmartMail.Cli.Commands
             (int newCidrs, int removedPermaBans) result;
             result.newCidrs = newCidrCount;
             result.removedPermaBans = permaBansToRemove;
+
+            Log.Debug("Build CIDR groups done");
 
             return result;
         }
