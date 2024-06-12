@@ -209,7 +209,7 @@ namespace SmartMail.Cli.Commands
                 if (isUsingVirusTotal && !grp.IsDocumented)
                 {
                     //Wait for documentation if Virus Total is being used
-                    Log.Info($"CIDR {grp.Subnet} skipped because it has {grp.UndocumentedCount} undocumented IPs");
+                    Log.Debug($"CIDR {grp.Subnet} skipped because it has {grp.UndocumentedCount} undocumented IPs");
                     script.Add($"Print CIDR {grp.Subnet} skipped because it has {grp.UndocumentedCount} undocumented IPs");
                     continue;
                 }
