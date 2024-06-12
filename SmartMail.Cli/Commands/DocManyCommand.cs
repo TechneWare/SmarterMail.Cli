@@ -63,6 +63,10 @@ namespace SmartMail.Cli.Commands
                     loadCacheScript.Run();
                 }
 
+                var totalUndocumented = Cache.AllBlockedIps
+                    .Where(i => !i.IsTemporary && !i.IsDocumented)
+                    .Count();
+
                 var undocumented = Cache.AllBlockedIps
                     .Where(i => !i.IsTemporary && !i.IsDocumented)
                     .Take(number)
@@ -71,7 +75,8 @@ namespace SmartMail.Cli.Commands
                 if (undocumented.Count != 0)
                 {
 
-                    Log.Info($"Found {undocumented.Count} IPs to document");
+                    Log.Info($"Documenting {undocumented.Count}/{totalUndocumented} IPs to document");
+                    Log.Info($"Known IPs are {(1.0 - (double)totalUndocumented / (double)Cache.AllBlockedIps.Count):P} documented");
 
                     var docScript = new Script(Log, "DocManyIps");
                     var curLogLevel = Log.LogLevel;
