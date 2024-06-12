@@ -202,6 +202,9 @@ namespace SmartMail.Cli.Models
                 ipInfo = vtClient.GetIPAddressInfo(ipAddress).ConfigureAwait(false).GetAwaiter().GetResult();
                 if (ipInfo != null)
                 {
+                    if (string.IsNullOrEmpty(ipInfo.attributes!.network))
+                        ipInfo.attributes.network = $"{ipInfo.id}/32";
+
                     ipInfo.LastQuery = DateTime.UtcNow;
                     Models.Cache.IPAddressInfos.Add(ipInfo);
                     if (withSave)

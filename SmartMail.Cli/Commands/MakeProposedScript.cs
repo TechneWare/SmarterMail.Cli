@@ -54,7 +54,7 @@ namespace SmartMail.Cli.Commands
                 var (newCidrs, removedPermaBans) = BuildCIDRs(script);
                 var moveIdsCount = MoveIdsBlocks(script);
                 var (existingIgnoredCidrCount, existingIgnoredIpsCount) = DropIgnored(script);
-                
+
                 Cache.QuedChanges = newCidrs + removedPermaBans + moveIdsCount + existingIgnoredCidrCount + existingIgnoredIpsCount;
 
                 string[] scriptHead = [
@@ -151,10 +151,7 @@ namespace SmartMail.Cli.Commands
             Log.Debug("Setting up individual bans");
             //Select all temp IPs that are not part of a group
             var newIps = Cache.AllBlockedIps           //De-duping list, if multiple protocols are hit - returns List<string>
-                .Where(b => b.IsTemporary
-                         && !Cache.ProposedIpGroups
-                                  .SelectMany(g => g.BlockedIps)
-                                  .Any(gp => gp.Ip == b.Ip))
+                .Where(b => b.IsTemporary)
                 .Select(b => b.Ip)
                 .Distinct().ToList();
 
@@ -206,6 +203,13 @@ namespace SmartMail.Cli.Commands
 
             foreach (var grp in Cache.ProposedIpGroups.Where(g => !ignoredCIDRs.Contains(g.IpRange)))
             {
+                if (!grp.IsDocumented)
+                {
+                    Log.Info($"CIDR {grp.Subnet} skipped because it has {grp.UndocumentedCount} undocumented IPs");
+                    script.Add($"Print CIDR {grp.Subnet} skipped because it has {grp.UndocumentedCount} undocumented IPs");
+                    continue;
+                }
+
                 //Create the new group, assume not using Virus Total api (No Score Avaialable)
                 var description = $"{DateTime.UtcNow}| IPs[{grp.BlockedIps.Count}] %Abuse[{grp.PercentAbuse:P}]";
 

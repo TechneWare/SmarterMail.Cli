@@ -105,7 +105,13 @@ namespace SmartMail.Cli.Commands
             var ipsToRestore = ipInfoes
                 .Where(i => !string.IsNullOrEmpty(i.id) && !existingIps.Contains(i.id))
                 .ToList();
+
+            var canBeDocumentedIps = ipInfoes
+                .Where(i => !string.IsNullOrEmpty(i.id) && Cache.AllBlockedIps.Where(a => a.Ip == i.id && !a.IsDocumented).FirstOrDefault() != null)
+                .ToList();
+
             ipsToRestore.AddRange(cidrIps);
+            ipsToRestore.AddRange(canBeDocumentedIps);
 
             var restoreScript = new Script(Log, "RestoreIpInfoes");
 
