@@ -68,10 +68,6 @@ namespace SmartMail.Cli.Models
                     LockJobs(command, $"Job #{Id}:{((ICommandFactory)this.command).CommandName} is waiting for other jobs to finish");
 
                     refreshTimespan = TimeSpan.FromSeconds(this.interval);
-                    this.NextRun = DateTime.UtcNow + refreshTimespan;
-                    var timerUpdated = this.timer!.Change(refreshTimespan, Timeout.InfiniteTimeSpan);
-                    if (!timerUpdated)
-                        Globals.Logger.Warning($"Filed to refresh timer for job {Id}:{Command}");
                     Globals.Logger.Prompt("\n\n");
                     Globals.Logger.Info($"Executing Job #{Id}:{((ICommandFactory)this.command).CommandName}");
 
@@ -92,6 +88,11 @@ namespace SmartMail.Cli.Models
                     }
 
                     command.Run();
+
+                    this.NextRun = DateTime.UtcNow + refreshTimespan;
+                    var timerUpdated = this.timer!.Change(refreshTimespan, Timeout.InfiniteTimeSpan);
+                    if (!timerUpdated)
+                        Globals.Logger.Warning($"Filed to refresh timer for job {Id}:{Command}");
 
                     this.NumExecutions++;
                 }
