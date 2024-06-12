@@ -55,6 +55,8 @@ namespace SmartMail.Cli.Commands
 
                 int pageSize = 1000;
                 int skip = 0;
+                Cache.PermaIpBlocks.Clear();
+
                 var r = Globals.ApiClient?.GetPermaBlockedIPs(pageSize, skip).ConfigureAwait(false).GetAwaiter().GetResult();
                 while (IsResponseOk(r) && r!.ipAccessList!.Length == pageSize)
                 {
