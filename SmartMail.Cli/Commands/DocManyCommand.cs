@@ -75,7 +75,7 @@ namespace SmartMail.Cli.Commands
                 if (undocumented.Count != 0)
                 {
 
-                    Log.Info($"Documenting {undocumented.Count}/{totalUndocumented} IPs to document");
+                    Log.Info($"Found {undocumented.Count}/{totalUndocumented} IPs to document");
                     Log.Info($"Known IPs are {(1.0 - (double)totalUndocumented / (double)Cache.AllBlockedIps.Count):P} documented");
 
                     var docScript = new Script(Log, "DocManyIps");
