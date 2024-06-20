@@ -7,6 +7,8 @@ This is a solution with two projects
 
 Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the blocklist. However, I created this initial version to solve my use case: automated blocklist management.
 
+See: [Initial Results](https://github.com/TechneWare/SmarterMail.Cli/discussions/1)
+
 The command line utility grew into something that can be extended to perform any action against a Smarter Mail server. 
 
 With features such as:
