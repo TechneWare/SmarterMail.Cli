@@ -267,6 +267,8 @@ namespace SmartMail.Cli.Models
             {
                 //Make a range cacluator for this subnet
                 var ipR = IPAddressRange.Parse(g.Subnet);
+
+
                 //Get all known IPs that are contined in the subnet
                 var groupableIps = Cache.AllBlockedIps
                                 .Where(i => !i.IsSubnet &&

@@ -60,7 +60,7 @@ namespace SmartMail.Cli.Commands
                 var r = Globals.ApiClient?.GetPermaBlockedIPs(pageSize, skip).ConfigureAwait(false).GetAwaiter().GetResult();
                 while (IsResponseOk(r) && r!.ipAccessList!.Length == pageSize)
                 {
-                    Cache.PermaIpBlocks.AddRange(r.ipAccessList);
+                    Cache.PermaIpBlocks.AddRange(r.ipAccessList.Where(i => i.IsValid()));
                     skip += pageSize;
                     r = Globals.ApiClient?.GetPermaBlockedIPs(pageSize, skip).ConfigureAwait(false).GetAwaiter().GetResult();
                 }
