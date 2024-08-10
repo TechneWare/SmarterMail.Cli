@@ -7,6 +7,8 @@ This is a solution with two projects
 
 Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the blocklist. However, I created this initial version to solve my use case: automated blocklist management.
 
+See: [Initial Results](https://github.com/TechneWare/SmarterMail.Cli/discussions/1)
+
 The command line utility grew into something that can be extended to perform any action against a Smarter Mail server. 
 
 With features such as:
@@ -689,7 +691,7 @@ public class LoginResponse : IResponse
 The properties of this class are intentionally spelled the same as the response values returned from the server. This allows easy deserialization from the JSON response to the LoginResponse object.
 
 Under `Models.Requests`, you can find the Credential object, which is used to send a login request to the server.
-```
+```csharp
 public class Credential
 {
     public string username { get; set; } = string.Empty;
@@ -699,7 +701,7 @@ public class Credential
 Again, the spelling of the properties is specific to the server's expected JSON spelling.
 
 Then, we can put it all together by creating the supporting method for the `ApiClient` class.
-```
+```csharp
 public async Task<LoginResponse> Login(string username, string password)
 {
     string apiPath = "api/v1/auth/authenticate-user";
@@ -730,7 +732,7 @@ Here, we can see the basic pattern for an API method:
 - Convert the response into the IReponse object
 	- `var response = JsonConvert.DeserializeObject<LoginResponse>(result.data);`
 - If the response was not successful, then populate the error data
-```
+```csharp
 response = new LoginResponse()
 {
     resultCode = response?.resultCode ?? 401,
