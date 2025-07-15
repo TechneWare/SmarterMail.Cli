@@ -10,14 +10,14 @@ namespace SmartMail.Cli.Models
     /// <summary>
     /// Represents a CIDR group
     /// </summary>
-    public class BlockedIpGroup(string subnet)
+    public class BlockedIpGroup
     {
         //The subnet expressed as a CIDR
-        public string Subnet { get; set; } = subnet;
+        public string Subnet { get; set; }
         //Any IP addresses that are identified as being a part of this CIDR
         public List<BlockedIp> BlockedIps { get; set; } = [];
         //The range calculator to use for this group
-        public IPAddressRange IpRange { get; set; } = IPAddressRange.Parse(subnet);
+        public IPAddressRange IpRange { get; set; }
         //Calculate the abuse % by taking the total number of IPs found in this subnet / the useable number of IPs in the CIDR's range
         public double PercentAbuse => NumFound / RangeSize;
         //How many blocked IPs were found in this subnet
@@ -25,9 +25,7 @@ namespace SmartMail.Cli.Models
         public bool IsDocumented => BlockedIps.All(i => i.IsDocumented);
         public int UndocumentedCount => BlockedIps.Where(i => !i.IsDocumented).Count();
         //The number of useable IPs in this subnet
-        public double RangeSize => (double)IpRange!.AsEnumerable()
-            .Where(i => !i.ToString().EndsWith(".0") && !i.ToString().EndsWith(".255")) //Don't include unuseable addresses
-            .Count();
+        public double RangeSize { get; set; }
 
         //Gets the average score assigned to each of the member IPs
         public double AvgScore => BlockedIps.Any(i => i.Score > 0) ?
@@ -45,6 +43,13 @@ namespace SmartMail.Cli.Models
 
                 return sub;
             }
+        }
+
+        public BlockedIpGroup(string subnet)
+        {
+            Subnet = subnet;
+            IpRange = IPAddressRange.Parse(Subnet);
+            RangeSize = (double)IpRange!.AsEnumerable().Count();
         }
     }
 }

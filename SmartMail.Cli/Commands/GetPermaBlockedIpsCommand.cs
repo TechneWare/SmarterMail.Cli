@@ -53,7 +53,7 @@ namespace SmartMail.Cli.Commands
             {
                 Log.Debug("--- Get Perma Blocked IPs ---");
 
-                int pageSize = 1000;
+                int pageSize = 25000;
                 int skip = 0;
                 Cache.PermaIpBlocks.Clear();
 

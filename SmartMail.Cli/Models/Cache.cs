@@ -307,27 +307,21 @@ namespace SmartMail.Cli.Models
 
             //For each candidate IP
             Globals.Logger.Debug("----> Add Candidates to Groups");
-            while (candidateIps.Count != 0)
+            Parallel.ForEach(candidateIps, (ip) =>
             {
-                //Remove it from the candidates
-                var ip = candidateIps.First();
-                candidateIps.RemoveAt(0);
-
                 //Find any CIDR groups that it should belong to
                 var groupsForIp = allSubnets
-                    .Where(n => n.IpRange.Contains(IPAddress.Parse(ip.Ip)))
-                    .AsParallel()
-                    .ToList();
+                    .Where(n => n.IpRange.Contains(IPAddress.Parse(ip.Ip)));
 
                 //For each group found, add the IP to it
                 foreach (var g in groupsForIp)
                     g.BlockedIps.Add(ip);
-            }
+            });
 
             //Set the list of proposed CIDR groups, where the group has IPs in it and that abuses more than the trigger amount
             Globals.Logger.Debug("----> Set Final Groups");
             var proposedGroups = allSubnets
-                .Where(g => g.BlockedIps.Count > 1 && g.PercentAbuse > Globals.Settings.PercentAbuseTrigger)
+                .Where(g => g.PercentAbuse > Globals.Settings.PercentAbuseTrigger)
                 .AsParallel()
                 .ToList();
 
