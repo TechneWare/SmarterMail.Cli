@@ -69,6 +69,7 @@ namespace SmartMail.Cli.Commands
 
                 var undocumented = Cache.AllBlockedIps
                     .Where(i => !i.IsTemporary && !i.IsDocumented)
+                    .OrderByDescending(i => i.HasProposedGroup)
                     .Take(number)
                     .ToList();
 

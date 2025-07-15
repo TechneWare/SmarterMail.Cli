@@ -17,6 +17,8 @@ namespace SmartMail.Cli.Models
         
         //Identifies this IP as having come from the temporary(IDS) block list
         public bool IsTemporary { get; set; }
+        //True if it has been added to a proposed CIDR Group
+        public bool HasProposedGroup { get; set; } = false;
 
         //If this is a temporary block, then it will have some amount of time to live
         public TimeSpan? BlockTimeRemaining { get; set; }

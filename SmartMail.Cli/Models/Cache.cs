@@ -331,6 +331,9 @@ namespace SmartMail.Cli.Models
             //before allowing a CIDR block to be generated on the server.
             //So CIDR/24 requires 3 IPs and CIDR/16 requires 651 IPs found before a block is generated
             Cache.ProposedIpGroups.AddRange(proposedGroups);
+            foreach(var ip in proposedGroups.SelectMany(g=>g.BlockedIps))
+                ip.HasProposedGroup = true;
+
             Globals.Logger.Debug("--> Build Proposed IP Groups via API ended");
         }
         /// <summary>
