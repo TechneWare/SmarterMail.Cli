@@ -30,7 +30,7 @@ namespace SmartMail.Cli
         public static bool ShowScriptProgress { get; set; } = false;
 
         // Variables to keep track of quoatas for the Virus Total api
-        // Free Quota is Request based: 4/min 500/hr 15.5k/month
+        // Free Quota is Request based: 4/min 500/day 15.5k/month
         // Good candidate for Refactoring: should probably live on the Virus Total API
         public static DateTime vtLastAccess { get; set; }
         public static DateTime vtPeriodStart { get; set; }
@@ -71,6 +71,8 @@ namespace SmartMail.Cli
             if ((DateTime.UtcNow - vtLastAccess).TotalMinutes < 1 && vtMinuteAccessCount >= vtMinuteQuota)
             {
                 Logger.Warning("Minute Virus Total Quota Exceeded");
+                var nextLocalPeriodMin = vtLastAccess.AddMinutes(1).ToLocalTime();
+                LogQuota($"Denied until UTC[{vtLastAccess.AddMinutes(1)}] Local[{nextLocalPeriodMin.ToShortDateString()} {nextLocalPeriodMin.ToShortTimeString()}]");
                 return false;
             }
 
@@ -78,10 +80,19 @@ namespace SmartMail.Cli
             if ((DateTime.UtcNow - vtPeriodStart).TotalDays < 1 && vtDailyAccessCount >= vtDailyQuota)
             {
                 Logger.Warning("Daily Virus Total Quota Exceeded");
+                var nextPeriodStart = vtPeriodStart.AddDays(1).Date;
+                var nextLocalDay = nextPeriodStart.ToLocalTime();
+                LogQuota($"Denied until UTC[{nextPeriodStart}] Local[{nextLocalDay.ToShortDateString()} {nextLocalDay.ToShortTimeString()}]");
                 return false;
             }
 
+            LogQuota("Allowed");
             return true;
+        }
+        private static void LogQuota(string AccessStatus)
+        {
+            Logger.Info($"Virus Total Quota: Daily[{vtDailyAccessCount}/{vtDailyQuota}] Minute[{vtMinuteAccessCount}/{vtMinuteQuota}]");
+            Logger.Info($"Virus Total Access is {AccessStatus}");
         }
 
         /// <summary>

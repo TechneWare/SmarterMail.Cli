@@ -191,13 +191,13 @@ namespace SmartMail.Cli.Models
         /// Requests IP info from cache or from Virus Total, saving it to disk and updating the cache
         /// </summary>
         /// <param name="ipAddress">The IP Address to lookup</param>
+        /// <param name="withSave">If True, then data will be persisted to ipinfo.json</param>
         /// <returns>The response from the Virus Total api</returns>
         public static NetTools.VirusTotal.Models.IPAddressInfo? GetIpAddressInfo(string ipAddress, bool withSave)
         {
-            //Perma Cache these objects - a TOODO could be to expire the objects based on last_analysis_date or last_modification_date
-            //for the current use case however, its enough to have some info about the IP - since clearly anything in this list will be blocked anyway
-            //This is used more for cataloging all discovered IPs and determining proper CIDR groups when optimizing the server black list
-            //Possible enhancment would be to re-generate the entire SmarterMail server black list from this file
+            //Anything in this list will is blocked 
+            //This is used to cataloging all discovered IPs and determining proper CIDR groups when optimizing the server black list
+            //The server's black list can be re-generate from this file using the 'Restore * force' command (See SaveIpInfoes())
             var ipInfo = Models.Cache.IPAddressInfos.Where(inf => inf.id == ipAddress).SingleOrDefault();
 
             if (ipInfo == null)
@@ -207,6 +207,7 @@ namespace SmartMail.Cli.Models
                 ipInfo = vtClient.GetIPAddressInfo(ipAddress).ConfigureAwait(false).GetAwaiter().GetResult();
                 if (ipInfo != null)
                 {
+                    //if no network info is available, then assume a single IP using /32
                     if (string.IsNullOrEmpty(ipInfo.attributes!.network))
                         ipInfo.attributes.network = $"{ipInfo.id}/32";
 
