@@ -47,7 +47,7 @@ namespace SmartMail.Cli.Commands
                 Log.SetLogLevel(curLogLevel);
             }
 
-            Log.Debug("---- Building Propossed IP block Script ----");
+            Log.Debug("---- Building Proposed IP block Script ----");
             var script = new Script(Log, "CommitProposedBans");
 
             try
@@ -60,7 +60,7 @@ namespace SmartMail.Cli.Commands
 
                 string[] scriptHead = [
                         $"# AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [{DateTime.UtcNow} UTC]",
-                        $"# Will Create {newCidrs} CIDR groups and remove {removedPermaBans} perma bans",
+                        $"# Will Create {newCidrs} CIDR groups and remove {removedPermaBans} perm bans",
                         $"# Will Move {moveIdsCount} Temporary IDS blocks to the blacklist",
                         $"# Will Restore {existingIgnoredCidrCount} Ignored CIDR groups",
                         $"# Will Remove {existingIgnoredIpsCount} Ignored IPs",
@@ -90,7 +90,7 @@ namespace SmartMail.Cli.Commands
 
                 script.Save("commit_bans.txt", scriptHead, scriptFoot);
 
-                Log.Debug("---- Done Building Propossed IP block Script ----");
+                Log.Debug("---- Done Building Proposed IP block Script ----");
             }
             catch (Exception ex)
             {
@@ -150,7 +150,7 @@ namespace SmartMail.Cli.Commands
 
         private int MoveIdsBlocks(Script script)
         {
-            //move remaining temp bans to perma bans
+            //move remaining temp bans to perm bans
             Log.Debug("Setting up individual bans");
             //Select all temp IPs that are not part of a group
             var newIps = Cache.AllBlockedIps           //De-duping list, if multiple protocols are hit - returns List<string>
@@ -206,7 +206,7 @@ namespace SmartMail.Cli.Commands
             var newCidrCount = Cache.ProposedIpGroups.Where(g => !ignoredCIDRs.Contains(g.IpRange)).Count();
 
             if (newCidrCount > 0)
-                script.Add($"print === Making {newCidrCount} CIDR Groups and removing {permaBansToRemove} perma bans");
+                script.Add($"print === Making {newCidrCount} CIDR Groups and removing {permaBansToRemove} perm bans");
 
             foreach (var grp in Cache.ProposedIpGroups.Where(g => !ignoredCIDRs.Contains(g.IpRange)))
             {
@@ -218,14 +218,14 @@ namespace SmartMail.Cli.Commands
                     continue;
                 }
 
-                //Create the new group, assume not using Virus Total api (No Score Avaialable)
+                //Create the new group, assume not using Virus Total API (No Score Available)
                 var description = $"{DateTime.UtcNow}| IPs[{grp.BlockedIps.Count}] %Abuse[{grp.PercentAbuse:P}]";
 
-                //Using the Virus Total api, so include the score
+                //Using the Virus Total API, so include the score
                 if (isUsingVirusTotal)
                     description = $"{DateTime.UtcNow}| IPs[{grp.BlockedIps.Count}] AvgScore[{grp.AvgScore:F3}] %Abuse[{grp.PercentAbuse:P}]";
 
-                if (script.Add($"pb {grp.Subnet} {description}"))  //Perma ban the CIDR with a limited description
+                if (script.Add($"pb {grp.Subnet} {description}"))  //Perm ban the CIDR with a limited description
                 {
                     Log.Debug($"Added Entry for CIDR:{grp.Subnet} to clean up {grp.BlockedIps.Count} IP blocks");
 
@@ -240,9 +240,9 @@ namespace SmartMail.Cli.Commands
                         }
                         else
                         {
-                            //remove perma ban
+                            //remove perm ban
                             if (script.Add($"DeleteBan {blk.Ip}"))
-                                Log.Debug($"Cleaned up Perma Block on: {blk.Ip}");
+                                Log.Debug($"Cleaned up Perm Block on: {blk.Ip}");
                         }
                     }
                 }

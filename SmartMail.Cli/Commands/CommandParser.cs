@@ -15,7 +15,7 @@ namespace SmartMail.Cli.Commands
         private readonly IEnumerable<ICommandFactory?>? commands;      //The commands this parser knows about
 
         /// <summary>
-        /// Initilizes the parser with a list of commands
+        /// Initializes the parser with a list of commands
         /// </summary>
         /// <param name="commands">The commands this parser will use</param>
         public CommandParser(IEnumerable<ICommandFactory?>? commands)

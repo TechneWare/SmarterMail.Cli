@@ -20,17 +20,17 @@ namespace SmartMail.Cli.Commands
         /// </summary>
         public bool IsThreadSafe { get; internal set; }
         public ICommandLogger Log { get { return _logger; } }
-        public bool RequiresInteractiveMode { get; set; } = false; //Assume commands can be run from the commandline
+        public bool RequiresInteractiveMode { get; set; } = false; //Assume commands can be run from the command line
         protected CommandBase(ICommandLogger logger)
         {
             this._logger = logger;
         }
 
         /// <summary>
-        /// Commands that process api responses can use this to test if the response was ok
+        /// Commands that process API responses can use this to test if the response was OK
         /// </summary>
         /// <param name="response">The response returned from an API</param>
-        /// <returns>True if the response is ok</returns>
+        /// <returns>True if the response is OK</returns>
         public bool IsResponseOk(IResponse? response)
         {
             if (response != null && response.success)
@@ -50,10 +50,10 @@ namespace SmartMail.Cli.Commands
         }
 
         /// <summary>
-        /// Commands that access the api can use this to test if the connection to the server is ok
+        /// Commands that access the API can use this to test if the connection to the server is OK
         /// </summary>
-        /// <param name="apiClient">A SmarterMail api client object</param>
-        /// <returns>True if currently connected to the api, False if you need to login first</returns>
+        /// <param name="apiClient">A SmarterMail API client object</param>
+        /// <returns>True if currently connected to the API, False if you need to login first</returns>
         public bool IsConnectionOk(ApiClient? apiClient)
         {
             if (apiClient != null &&

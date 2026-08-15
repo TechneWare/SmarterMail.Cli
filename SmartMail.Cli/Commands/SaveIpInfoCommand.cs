@@ -31,7 +31,7 @@ namespace SmartMail.Cli.Commands
 
         public void Run()
         {
-            Log.Info("Saving VirusTotal api responses");
+            Log.Info("Saving VirusTotal API responses");
             Cache.SaveIpInfoes();
         }
     }

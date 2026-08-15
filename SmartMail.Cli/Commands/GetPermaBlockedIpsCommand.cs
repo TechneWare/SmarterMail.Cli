@@ -51,7 +51,7 @@ namespace SmartMail.Cli.Commands
         {
             if (IsConnectionOk(Globals.ApiClient))
             {
-                Log.Debug("--- Get Perma Blocked IPs ---");
+                Log.Debug("--- Get Perm Blocked IPs ---");
 
                 int pageSize = 25000;
                 int skip = 0;
@@ -68,7 +68,7 @@ namespace SmartMail.Cli.Commands
                 if (IsResponseOk(r))
                 {
                     Cache.PermaIpBlocks.AddRange(r!.ipAccessList!);
-                    Log.Info($"Total Perma Blocks: {Cache.PermaIpBlocks.Count}");
+                    Log.Info($"Total Perm Blocks: {Cache.PermaIpBlocks.Count}");
                     if (ShowOutput)
                     {
                         foreach (var ip in Cache.PermaIpBlocks)
@@ -83,7 +83,7 @@ namespace SmartMail.Cli.Commands
                     }
                 }
 
-                Log.Debug("--- Get Perma Blocked IPs Done ---");
+                Log.Debug("--- Get Perm Blocked IPs Done ---");
             }
         }
     }

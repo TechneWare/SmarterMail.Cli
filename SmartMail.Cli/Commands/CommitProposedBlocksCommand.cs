@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SmartMail.Cli.Commands
 {
     /// <summary>
-    /// Using the cached proposed blocking changes, commit all the changes using direct access to the api
+    /// Using the cached proposed blocking changes, commit all the changes using direct access to the API
     /// </summary>
     public class CommitProposedBlocksCommand : CommandBase, ICommand, ICommandFactory
     {
@@ -20,7 +20,7 @@ namespace SmartMail.Cli.Commands
 
         public string Description => "Commits proposed changes from the current cache (loaded with load command)";
 
-        public string ExtendedDescription => "Should clean up the temp block list and condense all perma blocks into CIDR ranges where possible";
+        public string ExtendedDescription => "Should clean up the temp block list and condense all perm blocks into CIDR ranges where possible";
 
         public CommitProposedBlocksCommand()
             : base(Globals.Logger)
@@ -38,7 +38,7 @@ namespace SmartMail.Cli.Commands
             if (!IsConnectionOk(Globals.ApiClient))
                 return;
 
-            Log.Info("---- Commiting Propossed IP blocks ----");
+            Log.Info("---- Committing Proposed IP blocks ----");
 
             try
             {
@@ -75,12 +75,12 @@ namespace SmartMail.Cli.Commands
                             }
                             else
                             {
-                                //remove perma ban
+                                //remove perm ban
                                 var delPermaResponse = Globals.ApiClient.DeletePermaBlockedIP(blk.Ip).ConfigureAwait(false).GetAwaiter().GetResult();
                                 if (IsResponseOk(delPermaResponse))
-                                    Log.Info($"Cleaned up Perma Block on: {blk.Ip}");
+                                    Log.Info($"Cleaned up Perm Block on: {blk.Ip}");
                                 else
-                                    Log.Warning($"FAILED: Cleaning up Perma Block on: {blk.Ip} {delPermaResponse.message}");
+                                    Log.Warning($"FAILED: Cleaning up Perm Block on: {blk.Ip} {delPermaResponse.message}");
                             }
                         }
                     }
@@ -90,8 +90,8 @@ namespace SmartMail.Cli.Commands
                     }
                 }
 
-                //For all the remaning temporary (IDS timout) blocks, move them to the black list
-                Log.Info("Moving remaining temp blocks to perma bans");
+                //For all the remaining temporary (IDS timeout) blocks, move them to the black list
+                Log.Info("Moving remaining temp blocks to perm bans");
 
                 var newIpBlocks = Cache.AllBlockedIps           //Select all temp blocks that are not part of a group
                     .Where(b => b.IsTemporary
@@ -110,9 +110,9 @@ namespace SmartMail.Cli.Commands
                             Log.Info($"Cleaned up Temp Block on: {tb.Ip}");
                             var savePermBlockResponse = Globals.ApiClient.SavePermaBlockedIP(tb.Ip, $"Created[{DateTime.UtcNow.ToShortDateString()}] auto moved from IDS").ConfigureAwait(false).GetAwaiter().GetResult();
                             if (IsResponseOk(savePermBlockResponse))
-                                Log.Info($"Added Perma block on: {tb.Ip}");
+                                Log.Info($"Added Perm block on: {tb.Ip}");
                             else
-                                Log.Warning($"FAILED: Adding Perma block on: {tb.Ip}");
+                                Log.Warning($"FAILED: Adding Perm block on: {tb.Ip}");
                         }
                         else
                             Log.Warning($"FAILED: Cleaning up Temp Block on: {tb.Ip} {delTempResponse.message}");
@@ -128,7 +128,7 @@ namespace SmartMail.Cli.Commands
             }
             finally
             {
-                Log.Info("---- Done Commiting Propossed IP blocks ----");
+                Log.Info("---- Done Committing Proposed IP blocks ----");
             }
         }
     }

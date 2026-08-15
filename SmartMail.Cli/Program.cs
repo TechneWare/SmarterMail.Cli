@@ -6,9 +6,9 @@ using System.Text;
 internal class Program
 {
     /// <summary>
-    /// Main Entry Point for the SmartMail api client
+    /// Main Entry Point for the SmartMail API client
     /// </summary>
-    /// <param name="args">Optional commandline args</param>
+    /// <param name="args">Optional command line args</param>
     private static void Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
@@ -23,11 +23,11 @@ internal class Program
 
         try
         {
-            //Initilize from ipinfo.json - contains all api responses from Virus Total's api
+            //Initialize from ipinfo.json - contains all API responses from Virus Total's API
             //Used to document each IP address and potentially rebuild the primary black list
             Cache.LoadIpInfoes();
 
-            //Initilize from ipIgnore.json - contains all IPs that should be kept off the blacklist
+            //Initialize from ipIgnore.json - contains all IPs that should be kept off the blacklist
             Cache.LoadIgnoreIps();
         }
         catch (Exception ex)
@@ -56,7 +56,7 @@ internal class Program
         }
         else
         {
-            //run in commandline mode
+            //run in command line mode
             var availCommands = Utils.GetAvailableCommands();
             var parser = new CommandParser(availCommands);
             startCommand = parser.ParseCommand(args);
@@ -73,7 +73,7 @@ internal class Program
                 Globals.Logger.Debug($"Args:{String.Join(" ", args)}");
             }
 
-            //If settings are invoked from the commandline, then skip the startup script
+            //If settings are invoked from the command line, then skip the startup script
             if (startCommand.GetType() != typeof(SettingsCommand))
                 startupScript?.Run();
         }

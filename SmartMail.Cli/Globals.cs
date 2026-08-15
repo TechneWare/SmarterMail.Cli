@@ -29,7 +29,7 @@ namespace SmartMail.Cli
         public static bool IsInteractiveMode { get; set; } = false;
         public static bool ShowScriptProgress { get; set; } = false;
 
-        // Variables to keep track of quoatas for the Virus Total api
+        // Variables to keep track of quotas for the Virus Total API
         // Free Quota is Request based: 4/min 500/day 15.5k/month
         // Good candidate for Refactoring: should probably live on the Virus Total API
         public static DateTime vtLastAccess { get; set; }
@@ -41,7 +41,7 @@ namespace SmartMail.Cli
 
         /// <summary>
         /// Resets and records Virus Total access counts by minute and day
-        /// Called whenever an api call succeeds
+        /// Called whenever an API call succeeds
         /// </summary>
         public static void RecordAccessVtApi()
         {
@@ -64,7 +64,7 @@ namespace SmartMail.Cli
         /// <summary>
         /// Used to skip logic if a virus total quota has been exceeded
         /// </summary>
-        /// <returns>T/F - if you can access the api at this time</returns>
+        /// <returns>T/F - if you can access the API at this time</returns>
         public static bool TryAccessVtApi()
         {
             //minute quota exceeded
@@ -96,7 +96,7 @@ namespace SmartMail.Cli
         }
 
         /// <summary>
-        /// Sets the daily Virus Total counter to max, to stop furthar failed requests
+        /// Sets the daily Virus Total counter to max, to stop further failed requests
         /// Called if a response from Virus Total indicates exceeded quota
         /// </summary>
         public static void ExpireAccessVtApi()
@@ -115,9 +115,9 @@ namespace SmartMail.Cli
                 .UseLogLevel();
             Logger.SetLogLevel(Settings.LoggingLevel);
 
-            //Initilizes the Virus Total counters
+            //Initialize the Virus Total counters
             vtLastAccess = DateTime.UtcNow;
-            vtPeriodStart = new DateTime(vtLastAccess.Year, vtLastAccess.Month, vtLastAccess.Day); //appears to reset quota at midnight utc
+            vtPeriodStart = new DateTime(vtLastAccess.Year, vtLastAccess.Month, vtLastAccess.Day); //appears to reset quota at midnight UTC
             vtMinuteAccessCount = 0;
         }
 

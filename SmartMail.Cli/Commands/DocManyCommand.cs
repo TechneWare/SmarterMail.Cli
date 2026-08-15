@@ -21,7 +21,7 @@ namespace SmartMail.Cli.Commands
 
         public string[] CommandAlternates => ["dm", "docmany"];
 
-        public string Description => "Documents 1 or more undocumented perma blocked IPs";
+        public string Description => "Documents 1 or more undocumented perm blocked IPs";
 
         public string ExtendedDescription => "EG: DocMany 4 //Documents up to 4 Undocumented IPs";
 
@@ -89,7 +89,7 @@ namespace SmartMail.Cli.Commands
                         docScript.Add($"doc {ip.Ip} {ip.Protocol} noload nosave");
                     }
 
-                    docScript.Add("SaveIpInfo"); //Persist the data retreived at the end
+                    docScript.Add("SaveIpInfo"); //Persist the data retrieved at the end
                     docScript.Add("InvalidateCache");  //invalidate the cache when done
 
                     Log.Prompt("\nRunning");
@@ -99,7 +99,7 @@ namespace SmartMail.Cli.Commands
                     Log.SetLogLevel(curLogLevel);
                 }
                 else if (undocumented.Count == 0 && Cache.AllBlockedIps.Any(i => !i.IsTemporary))
-                    Log.Info("All Perma Banned IPs are documented");
+                    Log.Info("All Perm Banned IPs are documented");
                 else
                     Log.Info("Nothing to Document. Try running 'load' first.");
             }

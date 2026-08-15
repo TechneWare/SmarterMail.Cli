@@ -47,7 +47,7 @@ namespace SmartMail.Cli.Models
         /// </summary>
         public string Command => ((Commands.ICommandFactory)command).CommandName;
         /// <summary>
-        /// Initilize a new job and start the timer
+        /// Initialize a new job and start the timer
         /// </summary>
         /// <param name="command">The command to run</param>
         /// <param name="interval">The time in seconds between each run</param>
@@ -140,7 +140,7 @@ namespace SmartMail.Cli.Models
                 } while (isLocked);
             }
 
-            lock (lockObj) //prevent non thread safe commands from running on top of eachother
+            lock (lockObj) //prevent non thread safe commands from running on top of each other
             {
                 isLocked = !((CommandBase)command).IsThreadSafe;
             }

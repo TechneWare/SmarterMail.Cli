@@ -256,7 +256,7 @@ namespace SmartMail.Cli.Models
             return scriptLines;
         }
         /// <summary>
-        /// Determines if a command object is valid and if not responds with where the problem occured 
+        /// Determines if a command object is valid and if not responds with where the problem occurred 
         /// </summary>
         /// <param name="command">The command to validate</param>
         /// <param name="scriptLines">The lines of the script</param>

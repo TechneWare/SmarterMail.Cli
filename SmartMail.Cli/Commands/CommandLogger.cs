@@ -13,7 +13,7 @@ namespace SmartMail.Cli.Commands
     public partial class CommandLogger : ICommandLogger
     {
         private bool useTimeStamps = false;  //If true, include timestamps in the output
-        private bool useLogLevel = false;    //If true, include the logging lvel in the output
+        private bool useLogLevel = false;    //If true, include the logging level in the output
         private ICommandLogger.LogLevelType _loglevel;  //the current log level of this logger
 
         public CommandLogger()
@@ -49,7 +49,7 @@ namespace SmartMail.Cli.Commands
         /// Logs a message if the request log level is >= the current log level
         /// </summary>
         /// <param name="message">The message to log</param>
-        /// <param name="level">The log level olf the message</param>
+        /// <param name="level">The log level of the message</param>
         public void Log(string message, ICommandLogger.LogLevelType level)
         {
             if (level >= this.LogLevel)
@@ -63,7 +63,7 @@ namespace SmartMail.Cli.Commands
         }
 
         /// <summary>
-        /// Writes a message to the output reguardless of log level
+        /// Writes a message to the output regardless of log level
         /// Omits timestamps, log levels and new lines
         /// </summary>
         /// <param name="message">The message to display as a prompt</param>
@@ -85,7 +85,7 @@ namespace SmartMail.Cli.Commands
                         var fInfo = new FileInfo(Settings.LogFileName);
                         if (fInfo != null && fInfo.Length >= Globals.Settings.MaxLogSizeKB * 1024)
                         {
-                            //Splilt the log
+                            //Split the log
                             var splitFileName = Settings.LogFileNameTimeStamped;
                             File.Copy(Settings.LogFileName, splitFileName);
                             File.WriteAllText(Settings.LogFileName, string.Empty);

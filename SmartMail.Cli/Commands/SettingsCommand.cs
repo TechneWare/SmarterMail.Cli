@@ -49,7 +49,7 @@ namespace SmartMail.Cli.Commands
                 Log.Prompt($"Logging to File: {Settings.LogFileName}\n");
             }
 
-            settings.Protocol = Enum.TryParse(Utils.InputPrompt(settings.Protocol.ToString(), "Protocol [http|https]"), out SmartMailApiClient.HttpProtocol p) ? p : SmartMailApiClient.HttpProtocol.https;
+            settings.Protocol = Enum.TryParse(Utils.InputPrompt(settings.Protocol.ToString(), "Protocol [HTTP|HTTPS]"), out SmartMailApiClient.HttpProtocol p) ? p : SmartMailApiClient.HttpProtocol.https;
             settings.ServerAddress = Utils.InputPrompt(settings.ServerAddress, "Server domain/IP address");
             settings.UseAutoTokenRefresh = bool.TryParse(Utils.InputPrompt(settings.UseAutoTokenRefresh.ToString(), "Auto Refresh Auth Tokens? "), out _);
 

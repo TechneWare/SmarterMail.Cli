@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace SmartMail.Cli.Commands
 {
     /// <summary>
-    /// Initilizes the cache with all IP block data and displays the proposed new blocking strategy
+    /// Initializes the cache with all IP block data and displays the proposed new blocking strategy
     /// </summary>
     public class LoadBlockedIpDataCommand : CommandBase, ICommand, ICommandFactory
     {
@@ -22,7 +22,7 @@ namespace SmartMail.Cli.Commands
 
         public string Description => "Loads all sources of blocked IP data into memory";
 
-        public string ExtendedDescription => "Data is anyalized with find subnets to identify groups of malicious IPs";
+        public string ExtendedDescription => "Data is analyzed with find sub-nets to identify groups of malicious IPs";
 
         public LoadBlockedIpDataCommand()
             : base(Globals.Logger) 
@@ -52,7 +52,7 @@ namespace SmartMail.Cli.Commands
             getDataScript.Run();
 
             Log.Info($"Found {Cache.TempIpBlocks.Count} Temp Blocks");
-            Log.Info($"Found {Cache.PermaIpBlocks.Count} Perma Blocks");
+            Log.Info($"Found {Cache.PermaIpBlocks.Count} Perm Blocks");
 
             try
             {
@@ -81,8 +81,8 @@ namespace SmartMail.Cli.Commands
                                       .SelectMany(g => g.BlockedIps)
                                       .Any(gp => gp.Ip == b.Ip)).Count();
 
-                Log.Info($"Proposed: Leave {existingIPblocksToLeave} perma blocks and Remove {existingIPblocksToRemove} perma blocks");
-                Log.Info($"Proposed: Create {newIpBlocks} new Perma blocks");
+                Log.Info($"Proposed: Leave {existingIPblocksToLeave} perm blocks and Remove {existingIPblocksToRemove} perm blocks");
+                Log.Info($"Proposed: Create {newIpBlocks} new Perm blocks");
 
                 Cache.IsValid = true;
             }

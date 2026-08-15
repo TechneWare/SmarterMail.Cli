@@ -22,7 +22,7 @@ namespace SmartMail.Cli.Commands
 
         public string Description => "Logs into the API";
 
-        public string ExtendedDescription => "Logs into the API, retreiving auth tokens for the current session";
+        public string ExtendedDescription => "Logs into the API, retrieving auth tokens for the current session";
 
         public LoginCommand()
             : base(Globals.Logger)
@@ -53,7 +53,7 @@ namespace SmartMail.Cli.Commands
 
         public void Run()
         {
-            //Set a new api client onto the globals object
+            //Set a new API client onto the global object
             Globals.ApiClient = new SmartMailApiClient.ApiClient(Globals.Settings.Protocol, Globals.Settings.ServerAddress);
             
             var r = Globals.ApiClient.Login(userName, password).ConfigureAwait(false).GetAwaiter().GetResult();

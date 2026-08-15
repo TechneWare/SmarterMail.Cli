@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SmartMail.Cli.Commands
 {
     /// <summary>
-    /// Removes a Black Listed IP (perma ban)
+    /// Removes a Black Listed IP (perm ban)
     /// </summary>
     public class DeletePermaBlockedIpCommand : CommandBase, ICommand, ICommandFactory
     {
@@ -47,11 +47,11 @@ namespace SmartMail.Cli.Commands
         {
             if (IsConnectionOk(Globals.ApiClient))
             {
-                Log.Info($"Deleting Perma Block on [{this.ipAddress}]");
+                Log.Info($"Deleting Perm Block on [{this.ipAddress}]");
                 var r = Globals.ApiClient?.DeletePermaBlockedIP(this.ipAddress).ConfigureAwait(false).GetAwaiter().GetResult();
 
                 if (IsResponseOk(r))
-                    Log.Debug($"Done Deleting Perma Block on [{this.ipAddress}]");
+                    Log.Debug($"Done Deleting Perm Block on [{this.ipAddress}]");
             }
         }
     }

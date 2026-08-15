@@ -41,13 +41,13 @@ namespace NetTools
 
         // DON'T FIX this non-intuitive behavior that returns true when A <= B, 
         // even if the method name means "A is Greater than or Equals B", for keeping backward compatibility.
-        // Fixed verison is in "NetTools.Internal" namespace "Bits" class.
+        // Fixed version is in "NetTools.Internal" namespace "Bits" class.
         [EditorBrowsable(EditorBrowsableState.Never), Obsolete("This method returns true when A<=B, not A is greater than or equal (>=) B. use LtE method to check A<=B or not.")]
         public static bool GE(byte[] A, byte[] B) => LtE(A, B);
 
         // DON'T FIX this non-intuitive behavior that returns true when A >= B, 
         // even if the method name means "A is Less than or Equals B", for keeping backward compatibility.
-        // Fixed verison is in "NetTools.Internal" namespace "Bits" class.
+        // Fixed version is in "NetTools.Internal" namespace "Bits" class.
         [EditorBrowsable(EditorBrowsableState.Never), Obsolete("This method returns true when A>=B, not A is less than or equal (<=) B. use GtE method to check A>=B or not.")]
         public static bool LE(byte[] A, byte[] B) => GtE(A, B);
 
@@ -114,8 +114,8 @@ namespace NetTools
         }
 
         /// <summary>
-        /// Counts the number of leading 1's in a bitmask.
-        /// Returns null if value is invalid as a bitmask.
+        /// Counts the number of leading 1's in a bit mask.
+        /// Returns null if value is invalid as a bit mask.
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
@@ -142,7 +142,7 @@ namespace NetTools
                     case 0xC0: bitLength += 2; break;
                     case 0x80: bitLength += 1; break;
                     case 0x00: break;
-                    default: // invalid bitmask
+                    default: // invalid bit mask
                         return null;
                 }
                 // remainder must be 0x00

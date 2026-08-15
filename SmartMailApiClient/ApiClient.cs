@@ -36,7 +36,7 @@ namespace SmartMailApiClient
 
         public async Task<LoginResponse> Login(string username, string password)
         {
-            string apiPath = "api/v1/auth/authenticate-user";
+            string apiPath = "API/v1/auth/authenticate-user";
             var loginRequest = new Models.Requests.Credential() { username = username, password = password };
 
             var result = await ExecuteRequest(httpMethod: HttpMethod.Post, requestUri: apiPath, requestObj: loginRequest);
@@ -56,7 +56,7 @@ namespace SmartMailApiClient
 
         public async Task<LoginResponse> RefreshToken(string token)
         {
-            string apiPath = "api/v1/auth/refresh-token";
+            string apiPath = "API/v1/auth/refresh-token";
             var refreshRequest = new Models.Requests.RefreshToken() { token = token };
 
             var result = await ExecuteRequest(httpMethod: HttpMethod.Post, requestUri: apiPath, requestObj: refreshRequest);
@@ -76,7 +76,7 @@ namespace SmartMailApiClient
 
         public async Task<TempBlockedIPCountsResponse> GetCurrentlyBlockedIPsCount()
         {
-            string apiPath = "api/v1/settings/sysadmin/blocked-ips-count";
+            string apiPath = "API/v1/settings/sysadmin/blocked-ips-count";
             var request = new Models.Requests.GetTempBlockedIPs()
             {
                 serviceTypes =
@@ -120,7 +120,7 @@ namespace SmartMailApiClient
 
         public async Task<TempBlockedIPsResponse> GetCurrentlyBlockedIPs()
         {
-            string apiPath = "api/v1/settings/sysadmin/blocked-ips";
+            string apiPath = "API/v1/settings/sysadmin/blocked-ips";
             var request = new Models.Requests.GetTempBlockedIPs()
             {
                 serviceTypes =
@@ -164,7 +164,7 @@ namespace SmartMailApiClient
 
         public async Task<PermaBlockedIpsResponse> GetPermaBlockedIPs(int pageSize, int skip)
         {
-            string apiPath = "/api/v1/settings/sysadmin/ip-access/false";
+            string apiPath = "/API/v1/settings/sysadmin/ip-access/false";
             var request = new Models.Requests.GetPermaBlockedIps()
             {
                showHoneypot = false,
@@ -197,7 +197,7 @@ namespace SmartMailApiClient
 
         public async Task<DeletePermaBlockedIpResponse> DeletePermaBlockedIP(string ipAddress)
         {
-            string apiPath = "/api/v1/settings/sysadmin/ip-access-delete";
+            string apiPath = "/API/v1/settings/sysadmin/ip-access-delete";
             var request = new Models.Requests.DeletePermaBlockedIp()
             {
                 address = ipAddress
@@ -222,7 +222,7 @@ namespace SmartMailApiClient
 
         public async Task<SavePermaBlockedIpResponse> SavePermaBlockedIP(string ipAddress, string description)
         {
-            string apiPath = "/api/v1/settings/sysadmin/ip-access";
+            string apiPath = "/API/v1/settings/sysadmin/ip-access";
             var request = new Models.Requests.SavePermaBlockedIp()
             {
                 serviceList = [ 
@@ -258,7 +258,7 @@ namespace SmartMailApiClient
 
         public async Task<DeleteTempBlockedIpResponse> DeleteTempBlockedIP(IpTempBlock tempBlock)
         {
-            string apiPath = "/api/v1/settings/sysadmin/unblock-ips";
+            string apiPath = "/API/v1/settings/sysadmin/unblock-ips";
             var request = new Models.Requests.DeleteTempBlockedIp()
             {
                 ipBlocks = [ tempBlock ]

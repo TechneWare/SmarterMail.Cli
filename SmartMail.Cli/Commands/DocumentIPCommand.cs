@@ -27,9 +27,9 @@ namespace SmartMail.Cli.Commands
 
         public string Description => "Adds known IP Info to an IPs description in the servers settings>security>black list";
 
-        public string ExtendedDescription => "\n(Uses Virus Total API) EG: Description => Subnet:[127.0.0.0/24] TS:[YYYY/MM/DD HH:MM:SS UTC] P:[Smtp, Pop etc.] CTY:[CN, US, etc.] Score:[.152]" +
+        public string ExtendedDescription => "\n(Uses Virus Total API) EG: Description => Sub-net:[127.0.0.0/24] TS:[YYYY/MM/DD HH:MM:SS UTC] P:[Smtp, Pop etc.] CTY:[CN, US, etc.] Score:[.152]" +
                                              "\nnoload prevents cache reloading at completion" +
-                                             "\nnosave prevent saving after accessing the VirusTotal api" +
+                                             "\nnosave prevent saving after accessing the VirusTotal API" +
                                              "\nYou will need to call SaveIpInfo manually to persist the VirusTotal response data";
 
         public DocumentIPCommand()
@@ -137,7 +137,7 @@ namespace SmartMail.Cli.Commands
         /// <param name="ipCached">The IPAccess object that was resolved from cache</param>
         private void ResolveProtocol(IpAccess? ipCached)
         {
-            //Determine what protocol to include in the the new description
+            //Determine what protocol to include in the new description
             //IPs arrive on the black list initially with a limited description from the temporary block
             if ((string.IsNullOrEmpty(protocol) || protocol.ToLower() == "unknown") && ipCached != null)
             {

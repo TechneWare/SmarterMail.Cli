@@ -22,14 +22,14 @@ namespace NetTools
     // =============================================================
     // Problem
     // ----------
-    // An IPAddressRange after v.1.4 object cann't serialize to/deserialize from JSON text by using JSON.NET.
+    // An IPAddressRange after v.1.4 object can't serialize to/de-serialize from JSON text by using JSON.NET.
     //
     // Details
     // ----------
     // JSON.NET detect IEnumerable<IPAddress> interface prior to ISerializable. 
     // At a result, JSON.NET try to serialize IPAddressRange as array, such as "["192.168.0.1", "192.168.0.2"]".
     // This is unexpected behavior. (We expect "{"Begin":"192.168.0.1", "End:"192.168.0.2"}" style JSON text that is same with DataContractJsonSerializer.)
-    // In addition, JSON serialization with JSON.NET crash due to IPAddress cann't serialize by JSON.NET.
+    // In addition, JSON serialization with JSON.NET crash due to IPAddress can't serialize by JSON.NET.
     //
     // Work around
     // -----------
@@ -47,15 +47,15 @@ namespace NetTools
     // -------------
     // IReadOnlyDictionary<TKey,TVal> interface doesn't exist in .NET Framework v.4.0 or before.
     // In order to give priority to supporting serialization by JSON.NET, I had to truncate the support for .NET Framework 4.0.
-    // (.NET Standard 1.4 support IReadOnlyDictionary<TKey,TVal>, therefore there is no problem on .NET Core appliction.)
+    // (.NET Standard 1.4 support IReadOnlyDictionary<TKey,TVal>, therefore there is no problem on .NET Core application.)
     // 
-    // Binary level compatiblity
+    // Binary level compatibility
     // -------------------------
     // There is no problem even if IPAddressRange.dll is replaced with the latest version.
     // 
-    // Source code level compatiblity
+    // Source code level compatibility
     // -------------------------
-    // You cann't apply LINQ extension methods directory to IPAddressRange object.
+    // You can't apply LINQ extension methods directory to IPAddressRange object.
     // Because IPAddressRange implement two types of IEnumerable<T> (IEnumerable<IPaddress> and IEnumerable<KeyValuePair<K,V>>).
     // It cause ambiguous syntax error.
     // To avoid this error, you should use "AsEnumerable()" method before IEnumerable<IPAddressRange> access.
@@ -145,7 +145,7 @@ namespace NetTools
         /// <summary>
         /// Creates a range from a base address and mask bits.
         /// This can also be used with <see cref="SubnetMaskLength"/> to create a
-        /// range based on a subnet mask.
+        /// range based on a sub-net mask.
         /// </summary>
         /// <param name="baseAddress"></param>
         /// <param name="maskLength"></param>
@@ -218,7 +218,7 @@ namespace NetTools
             // trim white spaces.
             ipRangeString = ipRangeString.Trim();
 
-            // define local funtion to strip scope id in ip address string.
+            // define local function to strip scope id in ip address string.
             static string stripScopeId(string ipaddressString) => ipaddressString.Split('%')[0];
 
             // Pattern 1. CIDR range: "192.168.0.0/24", "fe80::/10%eth0"
@@ -244,7 +244,7 @@ namespace NetTools
             var m3 = m3_regex.Match(ipRangeString);
             if (m3.Success)
             {
-                // if the left part contains dot, but the right one does not, we treat it as a shortuct notation
+                // if the left part contains dot, but the right one does not, we treat it as a shortcut notation
                 // and simply copy the part before last dot from the left part as the prefix to the right one
                 var begin = m3.Groups["begin"].Value;
                 var end = m3.Groups["end"].Value;
@@ -286,7 +286,7 @@ namespace NetTools
                     switch (f)
                     {
                         case 0x00:
-                            if (bit != 0x00) throw new FormatException("The subnet mask is not linear.");
+                            if (bit != 0x00) throw new FormatException("The sub-net mask is not linear.");
                             break;
                         case 0x80:
                             if (bit == 0x00) f = 0x00;
@@ -314,16 +314,16 @@ namespace NetTools
 
         /// <summary>
         /// Takes a subnetmask (eg, "255.255.254.0") and returns the CIDR bit length of that
-        /// address. Throws an exception if the passed address is not valid as a subnet mask.
+        /// address. Throws an exception if the passed address is not valid as a sub-net mask.
         /// </summary>
-        /// <param name="subnetMask">The subnet mask to use</param>
+        /// <param name="subnetMask">The sub-net mask to use</param>
         /// <returns></returns>
         public static int SubnetMaskLength(IPAddress subnetMask)
         {
             ArgumentNullException.ThrowIfNull(subnetMask);
 
             var length = Bits.GetBitMaskLength(subnetMask.GetAddressBytes());
-            return length == null ? throw new ArgumentException("Not a valid subnet mask", nameof(subnetMask)) : length.Value;
+            return length == null ? throw new ArgumentException("Not a valid sub-net mask", nameof(subnetMask)) : length.Value;
         }
 
         public IEnumerator<IPAddress> GetEnumerator()
@@ -385,7 +385,7 @@ namespace NetTools
                     }
                 }
             }
-            throw new FormatException(string.Format("{0} is not a CIDR Subnet", ToString()));
+            throw new FormatException(string.Format("{0} is not a CIDR Sub-net", ToString()));
         }
 
         public int GetPrefixLength()
@@ -398,7 +398,7 @@ namespace NetTools
         }
 
         /// <summary>
-        /// Returns a Cidr String if this matches exactly a Cidr subnet
+        /// Returns a Cidr String if this matches exactly a Cidr sub-net
         /// </summary>
         public string ToCidrString()
         {

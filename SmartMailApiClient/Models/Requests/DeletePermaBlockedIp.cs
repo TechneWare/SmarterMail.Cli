@@ -9,6 +9,6 @@ namespace SmartMailApiClient.Models.Requests
     public class DeletePermaBlockedIp
     {
         public string address { get; set; } = "";
-        public int dataType { get; set; } = 1; //Unkown that this is - undocumented but observed in the wild
+        public int dataType { get; set; } = 1; //Unknown that this is - undocumented but observed in the wild
     }
 }

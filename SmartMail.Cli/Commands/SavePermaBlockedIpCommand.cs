@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SmartMail.Cli.Commands
 {
     /// <summary>
-    /// Saves an IP with a description to the SmarterMail black list (perma ban)
+    /// Saves an IP with a description to the SmarterMail black list (perm ban)
     /// </summary>
     public class SavePermaBlockedIpCommand : CommandBase, ICommand, ICommandFactory
     {
@@ -52,11 +52,11 @@ namespace SmartMail.Cli.Commands
         {
             if (IsConnectionOk(Globals.ApiClient))
             {
-                Log.Info($"Perma Blocking[{this.ip}]");
+                Log.Info($"Perm Blocking[{this.ip}]");
                 var r = Globals.ApiClient?.SavePermaBlockedIP(this.ip, this.description).ConfigureAwait(false).GetAwaiter().GetResult();
 
                 if (IsResponseOk(r))
-                    Log.Debug($"Done Perma Blocking[{this.ip}]");
+                    Log.Debug($"Done Perm Blocking[{this.ip}]");
             }
         }
     }

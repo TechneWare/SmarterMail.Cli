@@ -14,7 +14,7 @@ using System.Reflection;
 namespace SmartMail.Cli.NetTools.VirusTotal
 {
     /// <summary>
-    /// Client for Accessing Virus Total's Api
+    /// Client for Accessing Virus Total's API
     /// </summary>
     public class ApiClient
     {
@@ -83,15 +83,15 @@ namespace SmartMail.Cli.NetTools.VirusTotal
                     var serverResponse = await response.Content.ReadAsStringAsync();
                     var vtError = JsonConvert.DeserializeObject<ErrorResponse>(serverResponse);
                     if (vtError != null)
-                        resultError = new Error(response.StatusCode, $"Error from Uri[{requestUrl}]\n{vtError.error.code}: {vtError.error.message}", requestedObj: requestObj);
+                        resultError = new Error(response.StatusCode, $"Error from URL[{requestUrl}]\n{vtError.error.code}: {vtError.error.message}", requestedObj: requestObj);
                     else
-                        resultError = new Error(response.StatusCode, $"Error from Uri[{requestUrl}]\nServerResponse[{serverResponse}]", requestedObj: requestObj);
+                        resultError = new Error(response.StatusCode, $"Error from URL[{requestUrl}]\nServerResponse[{serverResponse}]", requestedObj: requestObj);
                 }
             }
             catch (Exception ex)
             {
 
-                resultError = new Error(HttpStatusCode.BadRequest, $"Unknown Error from Uri[{requestUrl}] {ex.Message}", requestedObj: requestObj);
+                resultError = new Error(HttpStatusCode.BadRequest, $"Unknown Error from URL[{requestUrl}] {ex.Message}", requestedObj: requestObj);
             }
 
             return (result, resultError);

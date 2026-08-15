@@ -164,7 +164,7 @@ namespace SmartMail.Cli.Commands
 
         private string ResolveProtocol(string ipAddress)
         {
-            //Determine what protocol to include in the the new description
+            //Determine what protocol to include in the new description
             var protocol = "Unknown";
 
             var ipCached = Cache.PermaIpBlocks.Where(i => i.ip == ipAddress).FirstOrDefault();

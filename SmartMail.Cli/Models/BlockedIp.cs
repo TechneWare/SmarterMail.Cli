@@ -23,11 +23,11 @@ namespace SmartMail.Cli.Models
         //If this is a temporary block, then it will have some amount of time to live
         public TimeSpan? BlockTimeRemaining { get; set; }
 
-        //Identifies this entry as a subnet if a / appears in its IP address
+        //Identifies this entry as a sub-net if a / appears in its IP address
         //When CIDR entries are in the black list, they return as an IP
         public bool IsSubnet => Ip.Contains('/');
 
-        //If the subnet is in the description, then we can consider it documented
+        //If the sub-net is in the description, then we can consider it documented
         public bool IsDocumented => !string.IsNullOrEmpty(Subnet.Trim());
         public bool HasDescription => !string.IsNullOrEmpty(Description.Trim());
 

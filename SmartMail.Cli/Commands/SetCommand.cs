@@ -100,7 +100,7 @@ namespace SmartMail.Cli.Commands
                     }
                     break;
                 default:
-                    Log.Error($"Unkown option: {option}");
+                    Log.Error($"Unknown option: {option}");
                     Log.Warning($"Valid Values: logfile, loglevel, progress");
                     break;
             }

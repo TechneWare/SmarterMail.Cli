@@ -5,7 +5,7 @@ This is a solution with two projects
 - A REST client for the Smarter Mail Server API
 - A simple command line utility to manage an IP Black List on a SmarterMail server using the server's API
 
-Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the blocklist. However, I created this initial version to solve my use case: automated blocklist management.
+Both projects have the potential to be extended and provide more features and automation against a Smarter Mail server than simply managing the block-list. However, I created this initial version to solve my use case: automated block-list management.
 
 See: [Initial Results](https://github.com/TechneWare/SmarterMail.Cli/discussions/1)
 
@@ -13,23 +13,23 @@ The command line utility grew into something that can be extended to perform any
 
 With features such as:
 - Auto-login to the API and token maintenance
-- Interactive or Commandline modes
+- Interactive or Command line modes
 - A scripting engine
 - Startup script
 - Scheduled jobs
 - Integration with Virus Total
 
 The original use case was to:
-- Automatically move all incoming IDS blocks to the blocklist with consistent documentation.
-- Optimize the server's blocklist by identifying CIDR groups and collapsing IP entries.
+- Automatically move all incoming IDS blocks to the block-list with consistent documentation.
+- Optimize the server's block-list by identifying CIDR groups and collapsing IP entries.
 
 ## A brief discussion on how this works
 
-### Moving incoming IDS blocks to the blocklist
+### Moving incoming IDS blocks to the block-list
 This is done as one might expect, by first:
 - Configuring the server's IDS rules to identify bad actor IP addresses: 
 	- found on the server under `Settings > Security > IDS Rules`.
-- Then, remove each IDS block and add/document it in the permanent blocklist.
+- Then, remove each IDS block and add/document it in the permanent block-list.
 
 ### Notes on Server Config
 You must configure the server's IDS rules in order to flag incoming IPs as abusive. See: 
@@ -48,31 +48,31 @@ _**Note:** As I host a small footprint server with only my accounts and a few fr
 		- Set the SMTP harvesting rule to block after 1 bad session, but with a shorter block time, which is not shorter than the automation waits between executions.
 	
 ### Is this for me?
-Even if you don't configure stringent rules because many users will forget their passwords, eventually, you will find you have an extensive list of IPs either showing up and falling off the IDS list after some time or that you have manually moved to the permanent blocklist.
+Even if you don't configure stringent rules because many users will forget their passwords, eventually, you will find you have an extensive list of IPs either showing up and falling off the IDS list after some time or that you have manually moved to the permanent block-list.
 
-- If you find that you don't want/have time to constantly monitor the IDS blocks and move them to the permanent blocklist.
+- If you find that you don't want/have time to constantly monitor the IDS blocks and move them to the permanent block-list.
 - Or you would just like to optimize your block list.
 - Or you are interested in a foundational starting point to access other parts of the Smarter Mail API using your own code.
 	- See API documentation from the server at:
 		- `Settings > API Documentation`
-		- Or `https://[your servers web address]/Documentation/api#/topics/overview`
+		- Or `https://[your servers web address]/Documentation/API#/topics/overview`
 - Then this utility/project may be for you.
 
-### Blocklist optimization
-Optimizing the blocklist is done by examining all the known bad actor IPs to see if any of them can be grouped into a subnet or CIDR group. Identifying these CIDR groups allows for replacing many IP address entries with a single entry covering an entire subnet. Consider the number of bad actor IPs found for a given subnet. We can make a judgment call as to the reputation of the subnet and thus choose when to implement a CIDR block that will encompass additional IP addresses.
+### Block-list optimization
+Optimizing the block-list is done by examining all the known bad actor IPs to see if any of them can be grouped into a sub-net or CIDR group. Identifying these CIDR groups allows for replacing many IP address entries with a single entry covering an entire sub-net. Consider the number of bad actor IPs found for a given sub-net. We can make a judgment call as to the reputation of the sub-net and thus choose when to implement a CIDR block that will encompass additional IP addresses.
 
 CIDR blocking has two main benefits:
-1. Since the subnet being blocked has a bad reputation:
-	- Any further abuse from other IPs on that subnet will not generate new IDS or temporary blocks.
+1. Since the sub-net being blocked has a bad reputation:
+	- Any further abuse from other IPs on that sub-net will not generate new IDS or temporary blocks.
 	- Or incur any extra processing time by any protocol listener (EG: SMTP, POP, IMAP).
-2. Since the blocklist is now shorter, it takes the server less time to search it when vetting future requests against the list.
+2. Since the block-list is now shorter, it takes the server less time to search it when vetting future requests against the list.
 	- Reducing resource usage is especially important if you're hosting a minimal-footprint server.
 	- Even if you have a higher-end server, as the list grows over time, it can eventually cause some noticeable delay.
 
 _See:_ [What is a CIDR](https://www.techtarget.com/searchnetworking/definition/CIDR)?
 
-### Identifying a CIDR group/subnet
-Suppose you have ever looked through the blocklist of an email server of any significant age. In that case, you will notice patterns in the IP addresses that start to appear that indicate that the subnet's owner is likely not trustworthy on any IP address. Therefore, the entire subnet can be blocked.
+### Identifying a CIDR group/sub-net
+Suppose you have ever looked through the block-list of an email server of any significant age. In that case, you will notice patterns in the IP addresses that start to appear that indicate that the sub-net's owner is likely not trustworthy on any IP address. Therefore, the entire sub-net can be blocked.
 
 For Example, consider the following addresses:
 ```logos
@@ -84,13 +84,13 @@ For Example, consider the following addresses:
 80.244.11.244
 ```
 
-It is easy to see the pattern here. The subnet `80.244.11.0/24` appears to be behaving poorly. This is an actual subnet that attacked my server 36 times while I was writing this.
+It is easy to see the pattern here. The sub-net `80.244.11.0/24` appears to be behaving poorly. This is an actual sub-net that attacked my server 36 times while I was writing this.
 
-By entering IPs such as `80.244.11.0/24` into your blocklist, you can effectively block all the IPs on the `80.244.11.x` subnet with a single entry. We can feel pretty comfortable doing this, as 36 out of 254 IPs, or about 14.2% of the IPs on this subnet, have been found to be bad actors. Thus, this subnet could be considered to have a bad reputation and deserves a CIDR entry on the blocklist, shortening the list by 35 entries.
+By entering IPs such as `80.244.11.0/24` into your block-list, you can effectively block all the IPs on the `80.244.11.x` sub-net with a single entry. We can feel pretty comfortable doing this, as 36 out of 254 IPs, or about 14.2% of the IPs on this sub-net, have been found to be bad actors. Thus, this sub-net could be considered to have a bad reputation and deserves a CIDR entry on the block-list, shortening the list by 35 entries.
 
-The `/24` represents the number of bits used in the subnet mask and, thus, the portion of the IP address that contains the subnet. In this case, `255.255.255.0` or `11111111 11111111 11111111 00000000` in binary. Therefore, we can see that the size of this subnet is the number of IP addresses that can fill out the last segment of the address. In this case, 256(0->255), minus 1 for the broadcast address(255), and minus 1 for the 0 address(Legacy broadcast/modern ignore), which leaves you with 254 useable addresses on the subnet.
+The `/24` represents the number of bits used in the sub-net mask and, thus, the portion of the IP address that contains the sub-net. In this case, `255.255.255.0` or `11111111 11111111 11111111 00000000` in binary. Therefore, we can see that the size of this sub-net is the number of IP addresses that can fill out the last segment of the address. In this case, 256(0->255), minus 1 for the broadcast address(255), and minus 1 for the 0 address(Legacy broadcast/modern ignore), which leaves you with 254 usable addresses on the sub-net.
 
-However, it can get more complicated since /24 might not accurately describe the 80.244.11.0 subnet.
+However, it can get more complicated since /24 might not accurately describe the 80.244.11.0 sub-net.
 
 Consider this: what if the IP list looked more like:
 ```logos
@@ -102,12 +102,12 @@ Consider this: what if the IP list looked more like:
 80.244.14.244
 ```
 
-You might be tempted to use `80.244.0.0/16` as the CIDR group to block on. So, how many IPs is this? Well, roughly 65,534 possible addresses, which would equate to approximately 0.05% of the IPs found on this subnet being bad actors. You might not feel comfortable blocking this entire address space, even if you found 36 abusive IPs coming from this subnet.
+You might be tempted to use `80.244.0.0/16` as the CIDR group to block on. So, how many IPs is this? Well, roughly 65,534 possible addresses, which would equate to approximately 0.05% of the IPs found on this sub-net being bad actors. You might not feel comfortable blocking this entire address space, even if you found 36 abusive IPs coming from this sub-net.
 
-If we can accuratly identify the CIDR range for a given IP, then we can more accuratly judge how abusive a subnet is and scale up how many IP discoveries it takes to issue a block for a given CIDR range. 
+If we can accurately identify the CIDR range for a given IP, then we can more accurately judge how abusive a sub-net is and scale up how many IP discoveries it takes to issue a block for a given CIDR range. 
 
 For example suppose we choose to block at 0.5% abuse
-- Subnet `Size` * `0.5%` = `Min#Abusive_IPs` to trigger a CIDR block
+- Sub-net `Size` * `0.5%` = `Min#Abusive_IPs` to trigger a CIDR block
 
 | CIDR | Size | #IPs |
 | :---: | :---: | :---: |
@@ -118,10 +118,10 @@ For example suppose we choose to block at 0.5% abuse
 
 As you can see, this allows the trigger value to scale up with CIDR size.  This is why a Virus Total API key is recommended, as not having that falls back to only using /24 or /16 CIDR ranges.
 
-So, the goal is to identify subnets that are not trusted while not penalizing subnets with only a few bad actors in them and blocking traffic as minimally and optimally as possible. At the same time, automate this as much as possible to get consistent documentation and reduce the amount of manual interaction with the server to maintain the blocklist. Plus, it might be nice to rebuild the blocklist or use the captured data in other systems/firewalls, etc.
+So, the goal is to identify subnets that are not trusted while not penalizing subnets with only a few bad actors in them and blocking traffic as minimally and optimally as possible. At the same time, automate this as much as possible to get consistent documentation and reduce the amount of manual interaction with the server to maintain the block-list. Plus, it might be nice to rebuild the block-list or use the captured data in other systems/firewalls, etc.
 
 ## The SmarterMail.CLI Utility
-The SmarterMail.CLI utility automates actions against a SmarterMail server's API and manages the server's blocklist.
+The SmarterMail.CLI utility automates actions against a SmarterMail server's API and manages the server's block-list.
 
 Writing an API wrapper and creating a hard-coded process to manage this list would be possible, but I used the command pattern instead. Exploring the API by hand was becoming tedious, and I had to maintain access/refresh tokens, so it just made sense to make something that could manage tokens for me while I was free to explore the API.
 
@@ -129,7 +129,7 @@ This then grew into the ability to auto-log into the server on launch, Script on
 
 ### Getting started
 
-_The jargon evolved here: IPs on the permanent blocklist are called PermaBlocks, and IPs on the IDS(Temporary list) are called TempBlocks._
+_The jargon evolved here: IPs on the permanent block-list are called PermaBlocks, and IPs on the IDS(Temporary list) are called TempBlocks._
 
 1. Clone/Compile/Run the solution
  	- If you want to build this on a Raspberry PI
@@ -155,7 +155,7 @@ Clear                             - Clears the screen
 CommitProposed                    - Commits proposed changes from the current cache (loaded with load command)
 DeleteBan [IpAddress/CIDR]        - Removes an IP/CIDR from the permanent blacklist
 DeleteTemp [IpAddress]            - Removes an IP from the temporary block list
-DMany [number]                    - Documents 1 or more undocumented perma blocked IPs
+DMany [number]                    - Documents 1 or more undocumented perm blocked IPs
 Doc [IpAddress protocol noload nosave]- Adds known IP Info to an IPs description in the servers settings>security>black list
 IpInfo [IpAddress]                - Attempts to retrieve IP Info from Virus Total for the specified IP Address
 GetPermaBlockIps [show]           - loads permanently blocked IP addresses to memory
@@ -188,13 +188,13 @@ Wait [milliseconds]               - Waits the specified number of milliseconds
 Most commands have a short version, and you can get those by typing `Help [CommandName]`
 
 **_Note:_ You will need a server-level admin account; a domain admin account is not sufficient**
-- A normal user account could be used, but additional commands would need to be created to manage that user's mailbox/account. Currently, the only actions supported are based on the server-level blocklist; thus, only server-level admin accounts are useful.
+- A normal user account could be used, but additional commands would need to be created to manage that user's mailbox/account. Currently, the only actions supported are based on the server-level block-list; thus, only server-level admin accounts are useful.
 
 3. Type `Login [Username] [password]`
 	- You should see the message `Logged In Successfully`. 
 	- From this point forward, until you close the program, the client will remain connected to the server.
 
-4. Type `LoadBlockedIpData` or just `load`, which will load the Count of IDS blocks, IDS list and the blocklist into memory.
+4. Type `LoadBlockedIpData` or just `load`, which will load the Count of IDS blocks, IDS list and the block-list into memory.
 	- At the same time it will generate a proposed blocking strategy
 ```logos
 	[6/6/2024 12:58:20 AM UTC]Info      : ---- Loading IP block data ----
@@ -215,18 +215,18 @@ Most commands have a short version, and you can get those by typing `Help [Comm
 	[6/6/2024 12:58:20 AM UTC]Info      :                Total:    0
 	[6/6/2024 12:58:20 AM UTC]Info      : ---- Temp Blocked IPs ----
 	[6/6/2024 12:58:20 AM UTC]Info      : Total Temp Blocks: 0
-	[6/6/2024 12:58:20 AM UTC]Info      : Loading Perma Blocked IPs
-	[6/6/2024 12:58:21 AM UTC]Info      : Total Perma Blocks: 888
+	[6/6/2024 12:58:20 AM UTC]Info      : Loading Perm Blocked IPs
+	[6/6/2024 12:58:21 AM UTC]Info      : Total Perm Blocks: 888
 	[6/6/2024 12:58:21 AM UTC]Info      : Found 0 Temp Blocks
-	[6/6/2024 12:58:21 AM UTC]Info      : Found 888 Perma Blocks
+	[6/6/2024 12:58:21 AM UTC]Info      : Found 888 Perm Blocks
 	[6/6/2024 12:58:23 AM UTC]Info      : Total IPs:884     Existing Groups:4
 	[6/6/2024 12:58:23 AM UTC]Info      : IPs added to existing groups:0
 	[6/6/2024 12:58:23 AM UTC]Info      : Proposed: 0 IPs in 0 New Groups
-	[6/6/2024 12:58:23 AM UTC]Info      : Proposed: Leave 884 perma blocks and Remove 0 perma blocks
-	[6/6/2024 12:58:23 AM UTC]Info      : Proposed: Create 0 new Perma blocks
+	[6/6/2024 12:58:23 AM UTC]Info      : Proposed: Leave 884 perm blocks and Remove 0 perm blocks
+	[6/6/2024 12:58:23 AM UTC]Info      : Proposed: Create 0 new Perm blocks
 	[6/6/2024 12:58:23 AM UTC]Info      : -------------------------------
 ```
-This output shows that there are currently no IDS blocks (Temp Blocked IPs), There are currently 888 Perma Blocks, of which 884 are IP addresses and 4 are CIDR groups, on the server's blocklist.
+This output shows that there are currently no IDS blocks (Temp Blocked IPs), There are currently 888 Perm Blocks, of which 884 are IP addresses and 4 are CIDR groups, on the server's block-list.
 
 5. Type `Make` to generate the script that would implement the proposed blocking actions
 	- You should see something like `Script saved to file: [path of executable]/commit_bans.txt`
@@ -235,9 +235,9 @@ Example Script:
 ```logos
 # AUTO GENERATED SCRIPT TO COMMIT PROPOSED IP BANS - [6/1/2024 4:53:59 PM UTC]
 
-# Perma ban the 80.255.11.0/24 subnet
+# Perm ban the 80.255.11.0/24 sub-net
 pb 80.244.11.0/24 6/1/2024 4:53:59 PM| IPs[36] AvgScore[0.182] %Abuse[14.17%]
-# Clean up existing perma bans
+# Clean up existing perm bans
 DeleteBan 80.244.11.57
 DeleteBan 80.244.11.58
 DeleteBan 80.244.11.60
@@ -250,7 +250,7 @@ DeleteBan 80.244.11.66
 #... 36 in total
 DeleteBan 80.244.11.152
 
-# Move any IDS blocks to the blocklist
+# Move any IDS blocks to the block-list
 
 # Delete temp ban for 1.231.115.252
 dt 1.231.115.252
@@ -303,8 +303,8 @@ Example config.json:
 - **UseAutoTokenRefresh:** true or false
 	- If true, the client will maintain an active connection
 	- If false, the API wrapper (SmartMailApiClient) will refresh the token as needed upon the next request
-- **PercentAbuseTrigger:** A number between 0 and 1 that triggers CIDR blocking if the subnet exceeds this percentage of bad actor IPs.
-	- The settings command limits this to .005 to 1, as .005 in a /24 subnet requires at least 2 IPs to trigger blocking.
+- **PercentAbuseTrigger:** A number between 0 and 1 that triggers CIDR blocking if the sub-net exceeds this percentage of bad actor IPs.
+	- The settings command limits this to .005 to 1, as .005 in a /24 sub-net requires at least 2 IPs to trigger blocking.
 - **UseAutoLogin:** If true, attempt to connect to the server at launch using the AutoLoginUsername and AutoLoginPassword.
 - **AutoLoginUsername:** The account to login with
 - **AutoLoginPassword:** The password to the account
@@ -374,9 +374,9 @@ Unless otherwise noted, all commands can be used in a script, in interactive mod
 
 | Command Alias | Comments |
 | :--- | :--- |
-| `CommitProposed` `cp` | Commits proposed changes from the current cache (loaded with load command). Cleans up the IDS blocks and condenses all perma blocks into CIDR ranges where possible. |
+| `CommitProposed` `cp` | Commits proposed changes from the current cache (loaded with load command). Cleans up the IDS blocks and condenses all perm blocks into CIDR ranges where possible. |
 
-_Note: This command does not use the script engine, it will immediatly execute the plan stored in memory. It is recommended to use the Make/Run commands instead_
+_Note: This command does not use the script engine, it will immediately execute the plan stored in memory. It is recommended to use the Make/Run commands instead_
 
 ### DeleteBan
 
@@ -394,9 +394,9 @@ _Note: This command does not use the script engine, it will immediatly execute t
 
 | Command Alias | Params | Comments |
 | :--- | :--- | :--- |
-| `DMany` `dm` `docmany` | number | Documents 1 or more undocumented perma blocked IPs |
+| `DMany` `dm` `docmany` | number | Documents 1 or more undocumented perm blocked IPs |
 
-_Note: This command requires a working Virus Total api key_
+_Note: This command requires a working Virus Total API key_
 _For free accounts, it is recommended not to use more then `4` for the `number` parameter, as 4 hits/min is the quota_
 
 ### Doc
@@ -415,7 +415,7 @@ _For free accounts, it is recommended not to use more then `4` for the `number` 
 
 | Command Alias | Params | Comments |
 | :--- | :--- | :--- |
-| `IpInfo` `ip` | IpAddress | Attempts to retreive IP Info from Virus Total for the specified IP Address |
+| `IpInfo` `ip` | IpAddress | Attempts to retrieve IP Info from Virus Total for the specified IP Address |
 
 _Display only - will save the returned data to IpInfo.json_
 
@@ -423,7 +423,7 @@ _Display only - will save the returned data to IpInfo.json_
 
 | Command Alias | Params | Comments |
 | :--- | :--- | :--- |
-| `GetPermaBlockIps` `gpbip` `gpb` | show | loads permanetly blocked IP addresses to memory |
+| `GetPermaBlockIps` `gpbip` `gpb` | show | loads permanently blocked IP addresses to memory |
 
 _If `show` is included, will also display the loaded data_
 
@@ -458,7 +458,7 @@ Example:
 - `ignore 127.0.0.0/24 Some Description` will ignore all IPs in the 127.0.0.x network.
 - `ignore list` will display the current ignore list
 
-_This command can be useful if you have a device or subnet that you know you never want to block but that can occasionally fall into an IDS block. You could also use the server's white-list to do this.  IPs/CIDRs in this list will be automatically removed when generating the blocking script with `make`._
+_This command can be useful if you have a device or sub-net that you know you never want to block but that can occasionally fall into an IDS block. You could also use the server's white-list to do this.  IPs/CIDRs in this list will be automatically removed when generating the blocking script with `make`._
 
 ### Interactive
 
@@ -544,7 +544,7 @@ _Searches the IP history data (IpInfo.json) for IPs that start with IpFragment o
 For Example: 
 - _`Restore *` will restore all IPs and remove all CIDR subnets_
 - _`Restore 192.168.1` will restore all IPs that start with 192.168.1 and remove any CIDR groups that match on 192.168.1_
-- _`Restore 192.168.1.0/24` will restore all known IPs in the 192.168.1.x subnet and remove any CIDR groups that either match or are contained by 192.168.1.0/24_
+- _`Restore 192.168.1.0/24` will restore all known IPs in the 192.168.1.x sub-net and remove any CIDR groups that either match or are contained by 192.168.1.0/24_
 
 _**Note:** After a restore, `make` may want to re-create CIDR blocks and remove IPs from the block list, depending on how your settings are configured_
 
@@ -640,7 +640,7 @@ _If you would rather examine the script before execution, then run `make` by its
 
 | Command Alias | Params | Comments |
 | :--- | :--- | :--- |
-| `Wait` | milliseconds | Waits the specified number of miliseconds |
+| `Wait` | milliseconds | Waits the specified number of milliseconds |
 
 _Useful in scripts_
 _EG: to set the timing between two jobs with the same period, introduce a delay between the `sched` commands_
@@ -688,7 +688,7 @@ public class LoginResponse : IResponse
     public Error? ResponseError { get; set; }
 }
 ```
-The properties of this class are intentionally spelled the same as the response values returned from the server. This allows easy deserialization from the JSON response to the LoginResponse object.
+The properties of this class are intentionally spelled the same as the response values returned from the server. This allows easy de-serialization from the JSON response to the LoginResponse object.
 
 Under `Models.Requests`, you can find the Credential object, which is used to send a login request to the server.
 ```csharp
@@ -704,7 +704,7 @@ Then, we can put it all together by creating the supporting method for the `ApiC
 ```csharp
 public async Task<LoginResponse> Login(string username, string password)
 {
-    string apiPath = "api/v1/auth/authenticate-user";
+    string apiPath = "API/v1/auth/authenticate-user";
     var loginRequest = new Models.Requests.Credential() { username = username, password = password };
 
     var result = await ExecuteRequest(httpMethod: HttpMethod.Post, requestUri: apiPath, requestObj: loginRequest);
@@ -724,7 +724,7 @@ public async Task<LoginResponse> Login(string username, string password)
 ```
 Here, we can see the basic pattern for an API method:
 - Set the path to the API endpoint we want to use
-	- `string apiPath = "api/v1/auth/authenticate-user";`
+	- `string apiPath = "API/v1/auth/authenticate-user";`
 - Create the request object
 	- `var loginRequest = new Models.Requests.Credential() { username = username, password = password };`
 - Pass these values to the ExecuteRequest method with the proper verb
@@ -797,7 +797,7 @@ When building a new command, we must set the following properties:
     - `public string Description => "Prints a message to the output";` is the basic description of this command
     - `public string ExtendedDescription => "";` is the extended description of this command
 
-The `Help` command uses these values to display documentation about this command. `CommandName` and `CommandAlternates` are used to parse the commandline and locate this command.
+The `Help` command uses these values to display documentation about this command. `CommandName` and `CommandAlternates` are used to parse the command line and locate this command.
 
 ## Constructor(s)
 Each constructor should call `: base(Globals.Logger)` to inject the logger and configure any basic settings.
@@ -833,7 +833,7 @@ public PrintCommand(string message)
 }
 ```
 
-Finally, if the command parses and everything is ok, then the `Run` method is called from the `ICommand` interface and is where the actual work this command does is implemented:
+Finally, if the command parses and everything is OK, then the `Run` method is called from the `ICommand` interface and is where the actual work this command does is implemented:
 ```csharp
 public void Run()
 {
@@ -877,17 +877,17 @@ public abstract class CommandBase
     /// </summary>
     public bool IsThreadSafe { get; internal set; }
     public ICommandLogger Log { get { return _logger; } }
-    public bool RequiresInteractiveMode { get; set; } = false; //Assume commands can be run from the commandline
+    public bool RequiresInteractiveMode { get; set; } = false; //Assume commands can be run from the command line
     protected CommandBase(ICommandLogger logger)
     {
         this._logger = logger;
     }
 
     /// <summary>
-    /// Commands that process api responses can use this to test if the response was ok
+    /// Commands that process API responses can use this to test if the response was OK
     /// </summary>
     /// <param name="response">The response returned from an API</param>
-    /// <returns>True if the response is ok</returns>
+    /// <returns>True if the response is OK</returns>
     public bool IsResponseOk(IResponse? response)
     {
         if (response != null && response.success)
@@ -908,10 +908,10 @@ public abstract class CommandBase
     }
 
     /// <summary>
-    /// Commands that access the api can use this to test if the connection to the server is ok
+    /// Commands that access the API can use this to test if the connection to the server is OK
     /// </summary>
-    /// <param name="apiClient">A SmarterMail api client object</param>
-    /// <returns>True if currently connected to the api, False if you need to login first</returns>
+    /// <param name="apiClient">A SmarterMail API client object</param>
+    /// <returns>True if currently connected to the API, False if you need to login first</returns>
     public bool IsConnectionOk(ApiClient? apiClient)
     {
         if (apiClient != null &&

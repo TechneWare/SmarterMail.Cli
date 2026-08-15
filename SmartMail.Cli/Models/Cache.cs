@@ -25,11 +25,11 @@ namespace SmartMail.Cli.Models
         /// </summary>
         public static Dictionary<string, int> TempBlockCounts { get; set; } = [];
         /// <summary>
-        /// Holds the result of requesting IDS blocks frm the server
+        /// Holds the result of requesting IDS blocks from the server
         /// </summary>
         public static int TotalTempBlocks => TempBlockCounts != null ? TempBlockCounts.Sum(k => k.Value) : 0;
         /// <summary>
-        /// Holds all known responses from the Virus Total api
+        /// Holds all known responses from the Virus Total API
         /// </summary>
         public static List<NetTools.VirusTotal.Models.IPAddressInfo> IPAddressInfos { get; set; } = [];
 
@@ -73,7 +73,7 @@ namespace SmartMail.Cli.Models
             ProposedIpGroups.Clear();
         }
         /// <summary>
-        /// Initilizes the cache from the SmarterMail server data
+        /// Initializes the cache from the SmarterMail server data
         /// </summary>
         /// <param name="tempBlockedIPs">Temporary IDS blocks</param>
         /// <param name="permaBlockedIps">Permanent Black List blocks</param>
@@ -95,7 +95,7 @@ namespace SmartMail.Cli.Models
                 });
             }
 
-            Globals.Logger.Debug("--> Load perma to All Blocked IPs");
+            Globals.Logger.Debug("--> Load perm to All Blocked IPs");
             //Load CIDR groups
             foreach (var b in permaBlockedIps)
             {
@@ -121,13 +121,13 @@ namespace SmartMail.Cli.Models
             //Build the proposed blocking strategy
             if (!string.IsNullOrEmpty(Globals.Settings.VirusTotalApiKey))
             {
-                //More accurate way of getting subnet data
+                //More accurate way of getting sub-net data
                 BuildIpGroupsViaApi();
                 BuildProposedIpGroupsViaApi();
             }
             else
             {
-                //Educated guess at subnet data
+                //Educated guess at sub-net data
                 BuildIpGroups();
                 BuildProposedIpGroups();
             }
@@ -192,7 +192,7 @@ namespace SmartMail.Cli.Models
         /// </summary>
         /// <param name="ipAddress">The IP Address to lookup</param>
         /// <param name="withSave">If True, then data will be persisted to ipinfo.json</param>
-        /// <returns>The response from the Virus Total api</returns>
+        /// <returns>The response from the Virus Total API</returns>
         public static NetTools.VirusTotal.Models.IPAddressInfo? GetIpAddressInfo(string ipAddress, bool withSave)
         {
             //Anything in this list will is blocked 
@@ -239,7 +239,7 @@ namespace SmartMail.Cli.Models
             }
         }
         /// <summary>
-        /// Initilizes the cache with the stored Virus Total Data
+        /// Initializes the cache with the stored Virus Total Data
         /// </summary>
         /// <exception cref="Exception">Bubbles the exception if there is a file system error</exception>
         public static void LoadIpInfoes()
@@ -266,11 +266,11 @@ namespace SmartMail.Cli.Models
             Globals.Logger.Debug("--> Build IP Groups via API started");
             foreach (var g in Cache.BlockedIpGroups)
             {
-                //Make a range cacluator for this subnet
+                //Make a range calculator for this sub-net
                 var ipR = IPAddressRange.Parse(g.Subnet);
 
 
-                //Get all known IPs that are contined in the subnet
+                //Get all known IPs that are contained in the sub-net
                 var groupableIps = Cache.AllBlockedIps
                                 .Where(i => !i.IsSubnet &&
                                 ipR.Contains(IPAddress.Parse(i.Ip))).ToList();
@@ -297,8 +297,8 @@ namespace SmartMail.Cli.Models
                 .ToList();
 
             //Make a list of CIDR groups from any known IPs that have Virus Total Data on them
-            //By selecting a distinct list of subnets
-            Globals.Logger.Debug("----> Get Distinct Subnets");
+            //By selecting a distinct list of sub-nets
+            Globals.Logger.Debug("----> Get Distinct sub-nets");
             var allSubnets = Cache.AllBlockedIps
                 .Where(i => i.IsDocumented)
                 .Select(i => i.Subnet)
@@ -326,9 +326,9 @@ namespace SmartMail.Cli.Models
                 .AsParallel()
                 .ToList();
 
-            //EG: If there are 254 useable addresses in the subnet and 3 IPs have been found to be abusive
+            //EG: If there are 254 usable addresses in the sub-net and 3 IPs have been found to be abusive
             //Then the PercentAbuse is .012 > Trigger(.01) so add the group to the proposed CIDR list
-            //The goal here is to scale up the minimum count of of abusive IPs found by the size of the CIDR range
+            //The goal here is to scale up the minimum count of abusive IPs found by the size of the CIDR range
             //before allowing a CIDR block to be generated on the server.
             //So CIDR/24 requires 3 IPs and CIDR/16 requires 651 IPs found before a block is generated
             Cache.ProposedIpGroups.AddRange(proposedGroups);
@@ -464,7 +464,7 @@ namespace SmartMail.Cli.Models
         /// Generates a CIDR range from an IP address for 1-3 segments
         /// </summary>
         /// <param name="ip">IP to extract the CIDR from</param>
-        /// <param name="numSegments">The number of segments to use for the subnet</param>
+        /// <param name="numSegments">The number of segments to use for the sub-net</param>
         /// <returns>CIDR of the IP based on segments</returns>
         /// <exception cref="Exception">numSegments must be between 1 and 3</exception>
         private static string GetCIDR(string ip, int numSegments)
@@ -485,11 +485,11 @@ namespace SmartMail.Cli.Models
             return subnet;
         }
         /// <summary>
-        /// Gets the subnet if using a number of segments
+        /// Gets the sub-net if using a number of segments
         /// </summary>
-        /// <param name="ip">ip to extract subnet from</param>
-        /// <param name="numSegments">number of segments to consider in the subnet</param>
-        /// <returns>The subnet portion of the IP address</returns>
+        /// <param name="ip">IP to extract sub-net from</param>
+        /// <param name="numSegments">number of segments to consider in the sub-net</param>
+        /// <returns>The sub-net portion of the IP address</returns>
         private static string GetIpSubnet(string ip, int numSegments)
         {
             var subnet = string.Empty;
