@@ -17,6 +17,9 @@ namespace SmartMail.Cli.Models
     /// </summary>
     public static class Cache
     {
+        private static readonly NetTools.VirusTotal.ApiClient virusTotalClient = new();
+        internal static IReadOnlySet<string> VirusTotalNotFoundBans { get; private set; } = new HashSet<string>();
+
         // API Models
         public static bool IsValid { get; set; } = false;
         public static int QuedChanges { get; set; } = 0;
@@ -118,18 +121,31 @@ namespace SmartMail.Cli.Models
                 }
             }
 
+            VirusTotalNotFoundBans = AllBlockedIps
+                .Where(ip => !ip.IsTemporary && ip.IsVirusTotalNotFound)
+                .Select(ip => ip.Ip)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            // A cached miss also excludes the address while its ban description is waiting to be saved.
+            var unknownIps = IPAddressInfos
+                .Where(info => info.VirusTotalNotFound)
+                .Select(info => info.id)
+                .OfType<string>()
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            unknownIps.UnionWith(VirusTotalNotFoundBans);
+            var groupableIps = AllBlockedIps.Where(ip => !unknownIps.Contains(ip.Ip)).ToList();
+
             //Build the proposed blocking strategy
             if (!string.IsNullOrEmpty(Globals.Settings.VirusTotalApiKey))
             {
                 //More accurate way of getting sub-net data
-                BuildIpGroupsViaApi();
-                BuildProposedIpGroupsViaApi();
+                BuildIpGroupsViaApi(groupableIps);
+                BuildProposedIpGroupsViaApi(groupableIps);
             }
             else
             {
                 //Educated guess at sub-net data
-                BuildIpGroups();
-                BuildProposedIpGroups();
+                BuildIpGroups(groupableIps);
+                BuildProposedIpGroups(groupableIps);
             }
 
             Globals.Logger.Debug("-- Done Init Cache --");
@@ -192,8 +208,9 @@ namespace SmartMail.Cli.Models
         /// </summary>
         /// <param name="ipAddress">The IP Address to lookup</param>
         /// <param name="withSave">If True, then data will be persisted to ipinfo.json</param>
+        /// <param name="cacheNotFound">Retain a confirmed miss for a ban that can be restored later.</param>
         /// <returns>The response from the Virus Total API</returns>
-        public static NetTools.VirusTotal.Models.IPAddressInfo? GetIpAddressInfo(string ipAddress, bool withSave)
+        public static NetTools.VirusTotal.Models.IPAddressInfo? GetIpAddressInfo(string ipAddress, bool withSave, bool cacheNotFound = true)
         {
             //Anything in this list will is blocked 
             //This is used to cataloging all discovered IPs and determining proper CIDR groups when optimizing the server black list
@@ -203,15 +220,17 @@ namespace SmartMail.Cli.Models
             if (ipInfo == null)
             {
                 //Data is not currently in the cache, so go get it
-                var vtClient = new NetTools.VirusTotal.ApiClient();
-                ipInfo = vtClient.GetIPAddressInfo(ipAddress).ConfigureAwait(false).GetAwaiter().GetResult();
+                ipInfo = virusTotalClient.GetIPAddressInfo(ipAddress).ConfigureAwait(false).GetAwaiter().GetResult();
                 if (ipInfo != null)
                 {
-                    //if no network info is available, then assume a single IP using /32
-                    if (string.IsNullOrEmpty(ipInfo.attributes!.network))
+                    ipInfo.LastQuery = DateTime.UtcNow;
+                    if (ipInfo.VirusTotalNotFound && !cacheNotFound)
+                        return ipInfo;
+
+                    // A successful report can omit its network. A confirmed miss has no subnet.
+                    if (!ipInfo.VirusTotalNotFound && string.IsNullOrEmpty(ipInfo.attributes!.network))
                         ipInfo.attributes.network = $"{ipInfo.id}/32";
 
-                    ipInfo.LastQuery = DateTime.UtcNow;
                     Models.Cache.IPAddressInfos.Add(ipInfo);
                     if (withSave)
                         Models.Cache.SaveIpInfoes();
@@ -261,7 +280,7 @@ namespace SmartMail.Cli.Models
         /// <summary>
         /// Build the list of CIDR groups that are currently in the SmarterMail black list using Virus Total Data
         /// </summary>
-        private static void BuildIpGroupsViaApi()
+        private static void BuildIpGroupsViaApi(List<BlockedIp> groupableIps)
         {
             Globals.Logger.Debug("--> Build IP Groups via API started");
             foreach (var g in Cache.BlockedIpGroups)
@@ -271,11 +290,11 @@ namespace SmartMail.Cli.Models
 
 
                 //Get all known IPs that are contained in the sub-net
-                var groupableIps = Cache.AllBlockedIps
+                var members = groupableIps
                                 .Where(i => !i.IsSubnet &&
                                 ipR.Contains(IPAddress.Parse(i.Ip))).ToList();
                 //Add anything that was found to the group
-                foreach (var ip in groupableIps)
+                foreach (var ip in members)
                     g.BlockedIps.Add(ip);
             }
             Globals.Logger.Debug("--> Build IP Groups via API ended");
@@ -283,7 +302,7 @@ namespace SmartMail.Cli.Models
         /// <summary>
         /// Builds the list of proposed CIDR groups using Virus Total Data
         /// </summary>
-        private static void BuildProposedIpGroupsViaApi()
+        private static void BuildProposedIpGroupsViaApi(List<BlockedIp> groupableIps)
         {
             Globals.Logger.Debug("--> Build Proposed IP Groups via API started");
             //Find all IPs that are currently in a group
@@ -292,31 +311,27 @@ namespace SmartMail.Cli.Models
                 .ToList();
             //Find all IPs that are candidates to be in a group
             Globals.Logger.Debug("----> Get Candidates");
-            var candidateIps = Cache.AllBlockedIps
+            var candidateIps = groupableIps
                 .Except(groupedIps)
+                .Select(ip => (Block: ip, Address: IPAddress.Parse(ip.Ip)))
                 .ToList();
 
             //Make a list of CIDR groups from any known IPs that have Virus Total Data on them
             //By selecting a distinct list of sub-nets
             Globals.Logger.Debug("----> Get Distinct sub-nets");
-            var allSubnets = Cache.AllBlockedIps
-                .Where(i => i.IsDocumented)
+            var allSubnets = groupableIps
+                .Where(i => i.HasSubnet)
                 .Select(i => i.Subnet)
                 .Distinct()
                 .Select(subnet => new BlockedIpGroup(subnet))
                 .ToList();
 
-            //For each candidate IP
             Globals.Logger.Debug("----> Add Candidates to Groups");
-            Parallel.ForEach(candidateIps, (ip) =>
+            Parallel.ForEach(allSubnets, group =>
             {
-                //Find any CIDR groups that it should belong to
-                var groupsForIp = allSubnets
-                    .Where(n => n.IpRange.Contains(IPAddress.Parse(ip.Ip)));
-
-                //For each group found, add the IP to it
-                foreach (var g in groupsForIp)
-                    g.BlockedIps.Add(ip);
+                foreach (var candidate in candidateIps)
+                    if (group.IpRange.Contains(candidate.Address))
+                        group.BlockedIps.Add(candidate.Block);
             });
 
             //Set the list of proposed CIDR groups, where the group has IPs in it and that abuses more than the trigger amount
@@ -340,15 +355,15 @@ namespace SmartMail.Cli.Models
         /// <summary>
         /// Build the list of CIDR groups that are currently in the SmarterMail black list
         /// </summary>
-        private static void BuildIpGroups()
+        private static void BuildIpGroups(List<BlockedIp> groupableIps)
         {
             //Use a simple strategy to match IPs with CIDR groups
             var knownSubnets = Cache.BlockedIpGroups.Select(g => g.SubnetBase).ToList();
-            var groupableIps = Cache.AllBlockedIps
+            var members = groupableIps
                                     .Where(i => !i.IsSubnet &&
                                     knownSubnets.Any(s => i.Ip.StartsWith(s)));
 
-            foreach (var ip in groupableIps)
+            foreach (var ip in members)
             {
                 var targetGroup = Cache.BlockedIpGroups.Where(g => ip.Ip.StartsWith(g.SubnetBase)).SingleOrDefault();
                 targetGroup?.BlockedIps.Add(ip);
@@ -357,10 +372,10 @@ namespace SmartMail.Cli.Models
         /// <summary>
         /// Builds the list of proposed CIDR groups from SmarterMail server data
         /// </summary>
-        private static void BuildProposedIpGroups()
+        private static void BuildProposedIpGroups(List<BlockedIp> groupableIps)
         {
             var groupedIps = Cache.BlockedIpGroups.SelectMany(g => g.BlockedIps).ToList();
-            var candidateIps = Cache.AllBlockedIps.Except(groupedIps).ToList();
+            var candidateIps = groupableIps.Except(groupedIps).ToList();
 
             while (candidateIps.Count != 0)
             {

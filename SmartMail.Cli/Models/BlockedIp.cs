@@ -27,8 +27,10 @@ namespace SmartMail.Cli.Models
         //When CIDR entries are in the black list, they return as an IP
         public bool IsSubnet => Ip.Contains('/');
 
-        //If the sub-net is in the description, then we can consider it documented
-        public bool IsDocumented => !string.IsNullOrEmpty(Subnet.Trim());
+        internal const string VirusTotalNotFoundValue = "NotFound";
+        public bool IsVirusTotalNotFound => GetValue("VT").Equals(VirusTotalNotFoundValue, StringComparison.OrdinalIgnoreCase);
+        public bool HasSubnet => !string.IsNullOrWhiteSpace(Subnet);
+        public bool IsDocumented => HasSubnet || IsVirusTotalNotFound;
         public bool HasDescription => !string.IsNullOrEmpty(Description.Trim());
 
         public string Description { get; set; } = "";

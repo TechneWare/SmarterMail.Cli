@@ -174,6 +174,9 @@ namespace SmartMail.Cli.Commands
                     {
                         Log.Debug($"Added DeleteTemp on: {tb.Ip}");
 
+                        if (Cache.VirusTotalNotFoundBans.Contains(tb.Ip))
+                            continue;
+
                         if (script.Add($"pb {tb.Ip} {DateTime.UtcNow} {tb.Description}"))
                             Log.Debug($"Added PermaBan on: {tb.Ip}");
                     }

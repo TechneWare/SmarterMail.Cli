@@ -91,12 +91,8 @@ namespace SmartMail.Cli.Commands
                 try
                 {
                     //make sure cache is loaded first
-                    var loadCacheScript = new Script(Log, ["load"], "LoadCache");
                     if (!Cache.IsValid)
-                    {
-                        loadCacheScript.Parse();
-                        loadCacheScript.Run();
-                    }
+                        new LoadBlockedIpDataCommand().Run();
 
                     var ipCached = Cache.PermaIpBlocks.Where(i => i.ip == ipAddress).FirstOrDefault();
                     if (ipCached == null)
@@ -105,6 +101,8 @@ namespace SmartMail.Cli.Commands
                     var ipInfo = Cache.GetIpAddressInfo(ipAddress, withSave: allowSaving);
                     if (ipInfo == null)
                         Log.Warning($"Unable to find any information for {ipAddress}");
+                    else if (ipInfo.VirusTotalNotFound)
+                        Log.Warning($"VirusTotal has no record for {ipAddress}. Documenting the individual ban as VT:{BlockedIp.VirusTotalNotFoundValue}.");
 
                     ResolveProtocol(ipCached);
                     string description = ipInfo?.GetDescription(protocol) ?? "No description available";
@@ -119,7 +117,7 @@ namespace SmartMail.Cli.Commands
                         //If several of these commands are qued up, then you might want to run them without cache reloading until all have executed
                         //Otherwise if its just a single command, then you probably do want to reload the cache when its done.
                         if (allowCacheReload)
-                            loadCacheScript.Run();
+                            new LoadBlockedIpDataCommand().Run();
                     }
                 }
                 catch (Exception ex)

@@ -1,4 +1,5 @@
 ﻿using SmartMail.Cli.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace SmartMail.Cli.NetTools.VirusTotal.Models
         public string? type { get; set; }
         public Attributes? attributes { get; set; }
         public DateTime LastQuery { get; set; }
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool VirusTotalNotFound { get; set; }
 
         /// <summary>
         /// Get's the best description possible for the requested IP
@@ -22,6 +25,9 @@ namespace SmartMail.Cli.NetTools.VirusTotal.Models
         /// <returns>The resolved description for the IP</returns>
         public string GetDescription(string protocol)
         {
+            if (VirusTotalNotFound)
+                return $"VT:{BlockedIp.VirusTotalNotFoundValue} P:{protocol}";
+
             string description = "";
             var hasData = !string.IsNullOrEmpty(id)
                        && !string.IsNullOrEmpty(type)

@@ -48,8 +48,12 @@ namespace SmartMail.Cli.Commands
         {
             try
             {
-                var ipInfo = Cache.GetIpAddressInfo(ipAddress, withSave: true);
-                if (ipInfo != null)
+                // Restore can recreate bans from ipinfo.json. A diagnostic miss alone should not create one.
+                var isBanned = Cache.PermaIpBlocks.Any(b => b.ip == ipAddress);
+                var ipInfo = Cache.GetIpAddressInfo(ipAddress, withSave: true, cacheNotFound: isBanned);
+                if (ipInfo?.VirusTotalNotFound == true)
+                    Log.Info($"VirusTotal has no record for {ipAddress}. Last lookup: {ipInfo.LastQuery} UTC");
+                else if (ipInfo != null)
                 {
                     Log.Info($"IP Info For: {ipInfo.id}");
                     Log.Info($"Score:{ipInfo.attributes?.last_analysis_stats?.Score ?? 0}");

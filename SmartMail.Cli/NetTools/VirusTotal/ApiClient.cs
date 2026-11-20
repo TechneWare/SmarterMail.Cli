@@ -39,14 +39,18 @@ namespace SmartMail.Cli.NetTools.VirusTotal
             string uri = $"ip_addresses/{ipAddress}";
 
             var result = await ExecuteRequest(HttpMethod.Get, uri);
-            var response = JsonConvert.DeserializeObject<IPAddressResponse>(result.data);
+            if (result.error is { StatusCode: HttpStatusCode.NotFound, VirusTotalCode: "NotFoundError" })
+            {
+                Globals.RecordAccessVtApi();
+                return new IPAddressInfo { id = ipAddress, VirusTotalNotFound = true };
+            }
 
             if (result.error != null)
             {
                 throw new Exception($"{result.error.StatusMessage}:{result.error.Message}");
             }
 
-            return response?.data;
+            return JsonConvert.DeserializeObject<IPAddressResponse>(result.data)?.data;
         }
 
         private async Task<(string data, Error? error)> ExecuteRequest(HttpMethod httpMethod, string requestUri, object? requestObj = null)
@@ -61,7 +65,7 @@ namespace SmartMail.Cli.NetTools.VirusTotal
                 if (!Globals.TryAccessVtApi())
                     throw new Exception("Virus Total Daily Quota Exceeded");
 
-                var msg = new HttpRequestMessage(httpMethod, requestUrl);
+                using var msg = new HttpRequestMessage(httpMethod, requestUrl);
                 msg.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 msg.Headers.Add("x-apikey", Globals.Settings.VirusTotalApiKey);
 
@@ -71,7 +75,7 @@ namespace SmartMail.Cli.NetTools.VirusTotal
                     msg.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 }
 
-                var response = await client.SendAsync(msg);
+                using var response = await client.SendAsync(msg);
                 if (response.IsSuccessStatusCode)
                 {
                     Globals.RecordAccessVtApi();
@@ -82,8 +86,11 @@ namespace SmartMail.Cli.NetTools.VirusTotal
                 {
                     var serverResponse = await response.Content.ReadAsStringAsync();
                     var vtError = JsonConvert.DeserializeObject<ErrorResponse>(serverResponse);
-                    if (vtError != null)
-                        resultError = new Error(response.StatusCode, $"Error from URL[{requestUrl}]\n{vtError.error.code}: {vtError.error.message}", requestedObj: requestObj);
+                    if (vtError?.error is { } error)
+                        resultError = new Error(response.StatusCode, $"Error from URL[{requestUrl}]\n{error.code}: {error.message}", requestedObj: requestObj)
+                        {
+                            VirusTotalCode = error.code
+                        };
                     else
                         resultError = new Error(response.StatusCode, $"Error from URL[{requestUrl}]\nServerResponse[{serverResponse}]", requestedObj: requestObj);
                 }

@@ -42,6 +42,13 @@ namespace SmartMail.Cli.Commands
 
             try
             {
+                if (!Cache.IsValid)
+                {
+                    new LoadBlockedIpDataCommand().Run();
+                    if (!Cache.IsValid)
+                        return;
+                }
+
                 //Find all the IPs that are currently in the IDS block list (temp blocks have a timeout)
                 var allTempBlocks = Globals.ApiClient!.GetCurrentlyBlockedIPs().ConfigureAwait(false).GetAwaiter().GetResult();
                 if (!IsResponseOk(allTempBlocks))
@@ -108,6 +115,9 @@ namespace SmartMail.Cli.Commands
                         if (IsResponseOk(delTempResponse))
                         {
                             Log.Info($"Cleaned up Temp Block on: {tb.Ip}");
+                            if (Cache.VirusTotalNotFoundBans.Contains(tb.Ip))
+                                continue;
+
                             var savePermBlockResponse = Globals.ApiClient.SavePermaBlockedIP(tb.Ip, $"Created[{DateTime.UtcNow.ToShortDateString()}] auto moved from IDS").ConfigureAwait(false).GetAwaiter().GetResult();
                             if (IsResponseOk(savePermBlockResponse))
                                 Log.Info($"Added Perm block on: {tb.Ip}");
